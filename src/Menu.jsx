@@ -3,23 +3,15 @@ import styles from './Menu.module.css'
 import logoPlaceholder from './assets/logo-placeholder.png'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { 
-<<<<<<< HEAD
   faHandHoldingDollar,
   faCalendarDays
-=======
-  faHandHoldingDollar
->>>>>>> 39ddfd30c65d48ebdd81a6130b5b729a08b92ed2
 } from '@fortawesome/free-solid-svg-icons'
 
 // Map categories to icons
 const getCategoryIcon = (categoryId) => {
   const iconMap = {
-<<<<<<< HEAD
     'payroll': faHandHoldingDollar,
     'bookings': faCalendarDays
-=======
-    'payroll': faHandHoldingDollar
->>>>>>> 39ddfd30c65d48ebdd81a6130b5b729a08b92ed2
   }
   return iconMap[categoryId] || faHandHoldingDollar
 }
