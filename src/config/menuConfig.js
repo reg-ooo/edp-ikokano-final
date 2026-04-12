@@ -1,5 +1,10 @@
 // Central menu configuration
 export const categories = [
+  { 
+    id: 'dashboard', 
+    label: 'Dashboard', 
+    component: 'Dashboard'
+  },
   {
     id: 'bookings',
     label: 'Bookings',
