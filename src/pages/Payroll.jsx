@@ -233,6 +233,7 @@ function Payroll() {
 
   return (
     <div className="payroll-wrap">
+      <h1>Payroll</h1>
       {/* Header with timestamp */}
       <div className="payroll-header">
         <div className="timestamp">

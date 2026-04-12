@@ -226,6 +226,7 @@ function InventoryReport() {
 
   return (
     <div className="inventory-report-wrap">
+      <h1>Inventory Report</h1>
       {/* Header with timestamp */}
       <div className="report-header">
         <div>
