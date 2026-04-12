@@ -4,6 +4,7 @@ import './CategoryPanel.css'
 // Lazy load page components
 const Payroll = lazy(() => import('./pages/Payroll'))
 const ManageBookings = lazy(() => import('./pages/Bookings/ManageBookings'))
+const ManageServices = lazy(() => import('./pages/Bookings/ManageServices'))
 const Dashboard = lazy(() => import('./pages/Dashboard'))
 const InventoryReport = lazy(() => import('./pages/Reports/InventoryReport'))
 
