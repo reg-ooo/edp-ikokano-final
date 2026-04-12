@@ -15,6 +15,11 @@ export const categories = [
     ]
   },
   { 
+    id: 'inventory', 
+    label: 'Inventory & Products', 
+    component: 'Inventory'
+  },
+  { 
     id: 'payroll', 
     label: 'Payroll', 
     component: 'Payroll'
