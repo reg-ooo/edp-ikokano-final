@@ -6,6 +6,7 @@ const Payroll = lazy(() => import('./pages/Payroll'))
 const ManageBookings = lazy(() => import('./pages/Bookings/ManageBookings'))
 const ManageServices = lazy(() => import('./pages/Bookings/ManageServices'))
 const Dashboard = lazy(() => import('./pages/Dashboard'))
+const Inventory = lazy(() => import('./pages/Inventory'))
 const InventoryReport = lazy(() => import('./pages/Reports/InventoryReport'))
 
 // Map component names to actual components
@@ -14,6 +15,7 @@ const componentMap = {
   'Bookings/ManageBookings': ManageBookings,
   'Bookings/ManageServices': ManageServices,
   'Dashboard': Dashboard,
+  'Inventory': Inventory,
   'Reports/InventoryReport': InventoryReport,
   'InventoryReport': InventoryReport
 }
