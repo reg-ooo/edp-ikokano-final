@@ -12,6 +12,7 @@ const InventoryReport = lazy(() => import('./pages/Reports/InventoryReport'))
 const componentMap = {
   'Payroll': Payroll,
   'Bookings/ManageBookings': ManageBookings,
+  'Bookings/ManageServices': ManageServices,
   'Dashboard': Dashboard,
   'Inventory': Inventory,
   'Reports/InventoryReport': InventoryReport,
