@@ -17,5 +17,13 @@ export const categories = [
     id: 'payroll', 
     label: 'Payroll', 
     component: 'Payroll'
+  },
+  {
+    id: 'reports',
+    label: 'Reports',
+    hasDropdown: true,
+    submenu: [
+      { id: 'inventory-report', label: 'InventoryReport', component: 'Reports/InventoryReport' }
+    ]
   }
 ]

@@ -5,12 +5,15 @@ import './CategoryPanel.css'
 const Payroll = lazy(() => import('./pages/Payroll'))
 const ManageBookings = lazy(() => import('./pages/Bookings/ManageBookings'))
 const Dashboard = lazy(() => import('./pages/Dashboard'))
+const InventoryReport = lazy(() => import('./pages/Reports/InventoryReport'))
 
 // Map component names to actual components
 const componentMap = {
   'Payroll': Payroll,
   'Bookings/ManageBookings': ManageBookings,
-  'Dashboard': Dashboard
+  'Dashboard': Dashboard,
+  'Reports/InventoryReport': InventoryReport,
+  'InventoryReport': InventoryReport
 }
 
 function CategoryPanel({ category, onBack, isMobilePanelOpen, isOpen }) {

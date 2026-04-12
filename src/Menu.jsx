@@ -4,16 +4,27 @@ import logoPlaceholder from './assets/logo-placeholder.png'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { 
   faHandHoldingDollar,
-  faCalendarDays
+  faCalendarDays,
+  faChartLine,
+  faChevronDown,
+  faWarehouse
 } from '@fortawesome/free-solid-svg-icons'
 
 // Map categories to icons
 const getCategoryIcon = (categoryId) => {
   const iconMap = {
     'payroll': faHandHoldingDollar,
-    'bookings': faCalendarDays
+    'bookings': faCalendarDays,
+    'reports': faChartLine
   }
   return iconMap[categoryId] || faHandHoldingDollar
+}
+
+const getSubmenuIcon = (submenuId) => {
+  const iconMap = {
+    'inventory-report': faWarehouse
+  }
+  return iconMap[submenuId] || faChartLine
 }
 
 function Menu({ isOpen, categories = [], selectedCategory, onCategorySelect, setOpen }) {
@@ -56,6 +67,10 @@ function Menu({ isOpen, categories = [], selectedCategory, onCategorySelect, set
                             />
                             <span>{cat.label}</span>
                           </span>
+                          <FontAwesomeIcon 
+                            icon={faChevronDown} 
+                            className={`${styles.chevron} ${expandedDropdown === cat.id ? styles.expanded : ''}`}
+                          />
                         </button>
                         {expandedDropdown === cat.id && (
                           <ul className={styles.submenu}>
@@ -66,6 +81,10 @@ function Menu({ isOpen, categories = [], selectedCategory, onCategorySelect, set
                                   onClick={() => handleSubmenuClick(item.id)}
                                 >
                                   <span className={styles.btnContent}>
+                                    <FontAwesomeIcon 
+                                      icon={getSubmenuIcon(item.id)} 
+                                      className={styles.submenuIcon}
+                                    />
                                     <span>{item.label}</span>
                                   </span>
                                 </button>
