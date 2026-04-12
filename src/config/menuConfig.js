@@ -10,7 +10,8 @@ export const categories = [
     label: 'Bookings',
     hasDropdown: true,
     submenu: [
-      { id: 'manage-bookings', label: 'Manage Bookings', component: 'Bookings/ManageBookings' }
+      { id: 'manage-bookings', label: 'Manage Bookings', component: 'Bookings/ManageBookings' },
+      { id: 'manage-services', label: 'Manage Services', component: 'Bookings/ManageServices' }
     ]
   },
   { 
