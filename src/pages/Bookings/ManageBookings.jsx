@@ -212,6 +212,7 @@ function ManageBookings() {
 
   return (
     <div className="manage-bookings-wrap">
+      <h1>Manage Bookings</h1>
       <div className="manage-bookings-top">
         <div className="manage-bookings-controls">
           <button className="primary-btn" onClick={openCreateForm}>Add Booking</button>

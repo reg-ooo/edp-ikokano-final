@@ -201,6 +201,7 @@ function ManageServices() {
 
   return (
     <div className="manage-services-wrap">
+      <h1>Manage Services</h1>
       <div className="manage-services-top">
         <div className="manage-services-controls">
           <button className="primary-btn" onClick={openCreateForm}>Add Service</button>

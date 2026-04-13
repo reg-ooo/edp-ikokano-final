@@ -7,14 +7,20 @@ import {
   faCalendarDays,
   faChartLine,
   faChevronDown,
-  faWarehouse
+  faWarehouse,
+  faBox,
+  faBook,
+  faHandsHelping,
+  faChartSimple
 } from '@fortawesome/free-solid-svg-icons'
 
 // Map categories to icons
 const getCategoryIcon = (categoryId) => {
   const iconMap = {
+    'dashboard': faChartSimple,
     'payroll': faHandHoldingDollar,
     'bookings': faCalendarDays,
+    'inventory': faBox,
     'reports': faChartLine
   }
   return iconMap[categoryId] || faHandHoldingDollar
@@ -22,7 +28,9 @@ const getCategoryIcon = (categoryId) => {
 
 const getSubmenuIcon = (submenuId) => {
   const iconMap = {
-    'inventory-report': faWarehouse
+    'inventory-report': faWarehouse,
+    'manage-bookings': faBook,
+    'manage-services': faHandsHelping
   }
   return iconMap[submenuId] || faChartLine
 }

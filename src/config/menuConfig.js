@@ -31,5 +31,10 @@ export const categories = [
     submenu: [
       { id: 'inventory-report', label: 'InventoryReport', component: 'Reports/InventoryReport' }
     ]
+  },
+  { 
+    id: 'account', 
+    label: 'Account Management', 
+    component: 'AccountManagement'
   }
 ]

@@ -164,6 +164,7 @@ function Inventory() {
 
   return (
     <div className="inventory-wrap">
+      <h1>Inventory</h1>
       <div className="inventory-top">
         <div className="inventory-controls">
           <input
