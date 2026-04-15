@@ -51,10 +51,11 @@ function Inventory() {
     unitPrice: ''
   })
 
-  // Save to localStorage whenever inventory changes
+  // Save to localStorage whenever inventory changes and notify Dashboard
   useEffect(() => {
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(inventory))
+      window.dispatchEvent(new CustomEvent('inventoryUpdated'))
     } catch (e) {
       console.error('Error saving inventory to localStorage:', e)
     }
