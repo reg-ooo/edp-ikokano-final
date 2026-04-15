@@ -1,15 +1,17 @@
 import { useState, useEffect } from 'react';
 import './Dashboard.css';
 
-const STORAGE_KEY = 'manageBookingsData';
+const BOOKING_STORAGE_KEY = 'manageBookingsData';
+const INVENTORY_STORAGE_KEY = 'inventoryData';
 
 function Dashboard() {
   const [bookings, setBookings] = useState([]);
+  const [lowStockCount, setLowStockCount] = useState(0);
 
   useEffect(() => {
     const loadBookings = () => {
       try {
-        const saved = localStorage.getItem(STORAGE_KEY);
+        const saved = localStorage.getItem(BOOKING_STORAGE_KEY);
         if (saved) {
           const parsedBookings = JSON.parse(saved);
           setBookings(parsedBookings);
@@ -19,11 +21,31 @@ function Dashboard() {
       }
     };
 
+    const loadInventory = () => {
+      try {
+        const saved = localStorage.getItem(INVENTORY_STORAGE_KEY);
+        if (saved) {
+          const parsedInventory = JSON.parse(saved);
+          const lowStockItems = parsedInventory.filter((item) => item.status === 'low-stock');
+          setLowStockCount(lowStockItems.length);
+        } else {
+          setLowStockCount(0);
+        }
+      } catch (e) {
+        console.error('Error loading inventory:', e);
+        setLowStockCount(0);
+      }
+    };
+
     loadBookings();
+    loadInventory();
 
     const handleStorageChange = (e) => {
-      if (e.key === STORAGE_KEY) {
+      if (e.key === BOOKING_STORAGE_KEY) {
         loadBookings();
+      }
+      if (e.key === INVENTORY_STORAGE_KEY) {
+        loadInventory();
       }
     };
 
@@ -31,12 +53,18 @@ function Dashboard() {
       loadBookings();
     };
 
+    const handleInventoryUpdated = () => {
+      loadInventory();
+    };
+
     window.addEventListener('storage', handleStorageChange);
     window.addEventListener('bookingsUpdated', handleBookingsUpdated);
+    window.addEventListener('inventoryUpdated', handleInventoryUpdated);
 
     return () => {
       window.removeEventListener('storage', handleStorageChange);
       window.removeEventListener('bookingsUpdated', handleBookingsUpdated);
+      window.removeEventListener('inventoryUpdated', handleInventoryUpdated);
     };
   }, []);
 
@@ -68,7 +96,7 @@ function Dashboard() {
           </div>
           <div className="stat-card">
             <h3>Low Stocks Alert</h3>
-            <p className="stat-value">0</p>
+            <p className="stat-value">{lowStockCount}</p>
           </div>
         </div>
       </div>
