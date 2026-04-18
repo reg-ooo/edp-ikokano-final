@@ -45,6 +45,7 @@
 
 .manage-services-table {
   border-collapse: collapse;
+  table-layout: fixed;
   width: 100%;
   background: #fff;
   border: 1px solid #d8d8d8;
@@ -52,17 +53,17 @@
   overflow: hidden;
 }
 
-.manage-services-table th:nth-child(2), /* Date Availed */
-.manage-services-table td:nth-child(2) {
-  width: 11%;        /* ← Change this value */
-  min-width: 100px;  /* ← Change this value */
-}
-
 .manage-services-table th,
 .manage-services-table td {
+  width: 20%;
   text-align: left;
   padding: 0.85rem 1rem;
   border-bottom: 1px solid #eee;
+}
+
+.manage-services-table th:last-child,
+.manage-services-table td:last-child {
+  width: 20%;
 }
 
 .manage-services-table th {
