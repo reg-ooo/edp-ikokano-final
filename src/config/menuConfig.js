@@ -29,7 +29,10 @@ export const categories = [
     label: 'Reports',
     hasDropdown: true,
     submenu: [
-      { id: 'inventory-report', label: 'InventoryReport', component: 'Reports/InventoryReport' }
+      { id: 'booking-report', label: 'Booking Report', component: 'Reports/BookingReport' },
+      { id: 'financial-report', label: 'Financial Report', component: 'Reports/FinancialReport' },
+      { id: 'inventory-report', label: 'Inventory Report', component: 'Reports/InventoryReport' },
+      { id: 'staff-report', label: 'Staff Report', component: 'Reports/StaffReport' }
     ]
   },
   { 
