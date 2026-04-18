@@ -39,7 +39,7 @@
 /* Summary Cards */
 .payroll-summary-cards {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(3, 1fr);
   gap: 1.25rem;
 }
 
@@ -230,10 +230,33 @@
   color: #ef4444;
 }
 
+/* Net Pay Column */
+.net-pay-cell {
+  font-weight: 700;
+  color: #10b981;
+}
+
 /* Action Buttons */
 .action-buttons {
   display: flex;
   gap: 0.5rem;
+}
+
+.view-btn {
+  background: none;
+  border: none;
+  color: #10b981;
+  font-weight: 600;
+  font-size: 0.75rem;
+  cursor: pointer;
+  padding: 0.25rem 0.5rem;
+  border-radius: 6px;
+  transition: all 0.2s;
+}
+
+.view-btn:hover {
+  background: #ecfdf5;
+  color: #059669;
 }
 
 .edit-btn {
@@ -284,11 +307,8 @@
 /* Modal */
 .modal-overlay {
   position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.5);
+  inset: 0;
+  background: rgba(0, 0, 0, 0.55);
   backdrop-filter: blur(4px);
   display: flex;
   align-items: center;
@@ -381,6 +401,32 @@
   font-size: 0.875rem;
 }
 
+/* Net Pay Preview in form */
+.net-pay-preview {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #ecfdf5;
+  border: 1px solid #6ee7b7;
+  border-radius: 12px;
+  padding: 0.75rem 1rem;
+  margin-top: 0.25rem;
+}
+
+.net-pay-preview-label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: #059669;
+}
+
+.net-pay-preview-value {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #10b981;
+}
+
 .modal-actions {
   display: flex;
   gap: 0.75rem;
@@ -433,6 +479,121 @@
 
 .delete-modal-btn:hover {
   background: #dc2626;
+}
+
+/* Detail Modal */
+.detail-modal {
+  text-align: center;
+}
+
+.detail-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.25rem;
+}
+
+.detail-modal-header h3 {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.detail-close-btn {
+  background: none;
+  border: none;
+  font-size: 1.1rem;
+  color: #64748b;
+  cursor: pointer;
+  padding: 0.25rem 0.5rem;
+  border-radius: 8px;
+  transition: all 0.2s;
+}
+
+.detail-close-btn:hover {
+  background: #f1f5f9;
+  color: #0f172a;
+}
+
+.detail-avatar {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #3b82f6, #10b981);
+  color: white;
+  font-size: 1.75rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 0.75rem;
+}
+
+.detail-name {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #0f172a;
+  margin-bottom: 0.25rem;
+}
+
+.detail-role {
+  font-size: 0.875rem;
+  color: #64748b;
+  margin-bottom: 0.75rem;
+}
+
+.detail-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem;
+  margin: 1.25rem 0;
+  text-align: left;
+}
+
+.detail-item {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 0.75rem 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.detail-item.net-pay-highlight {
+  background: #ecfdf5;
+  border-color: #6ee7b7;
+  grid-column: span 2;
+}
+
+.detail-label {
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: #64748b;
+}
+
+.detail-value {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.detail-value.deduction-value {
+  color: #ef4444;
+}
+
+.detail-value.net-pay-value {
+  font-size: 1.5rem;
+  color: #10b981;
+}
+
+.detail-actions {
+  display: flex;
+  gap: 0.75rem;
+  margin-top: 0.5rem;
 }
 
 /* Responsive */

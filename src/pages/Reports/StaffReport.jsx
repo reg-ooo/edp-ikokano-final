@@ -178,12 +178,6 @@ function StaffReport() {
           >
             Attendance & Payroll
           </button>
-          <button 
-            className={`tab-btn ${activeTab === 'analytics' ? 'active' : ''}`}
-            onClick={() => setActiveTab('analytics')}
-          >
-            Performance Analytics
-          </button>
         </div>
       </div>
 
@@ -335,17 +329,6 @@ function StaffReport() {
                           <span>Net Pay:</span>
                           <span>₱{selectedStaff.payroll.net.toLocaleString()}</span>
                         </div>
-                      </div>
-                    </div>
-                  </div>
-                )}
-
-                {activeTab === 'analytics' && (
-                  <div className="analytics-details">
-                    <div className="details-card">
-                      <h4>Performance Analytics</h4>
-                      <div className="analytics-placeholder">
-                        <p>Performance metrics and analytics coming soon...</p>
                       </div>
                     </div>
                   </div>

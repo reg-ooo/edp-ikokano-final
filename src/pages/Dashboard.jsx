@@ -104,7 +104,7 @@ function Dashboard() {
   return (
     <div className="dashboard">
       <h1>Dashboard</h1>
-      
+
       <div className="system-stats">
         <h2>System Statistics</h2>
         <div className="stats-grid">
@@ -126,7 +126,7 @@ function Dashboard() {
           </div>
         </div>
       </div>
-      
+
       <div className="status-breakdown">
         <h2>Booking Status Breakdown</h2>
         <div className="pie-chart-row">

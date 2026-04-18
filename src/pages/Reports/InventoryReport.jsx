@@ -81,28 +81,12 @@ function InventoryReport() {
     return '#10b981';
   };
 
-  const currentDateTime = new Date();
-  const formattedDate = currentDateTime.toLocaleDateString('en-US', { 
-    month: 'long', 
-    day: 'numeric', 
-    year: 'numeric' 
-  });
-  const formattedTime = currentDateTime.toLocaleTimeString('en-US', { 
-    hour: '2-digit', 
-    minute: '2-digit',
-    hour12: true
-  });
-
   return (
     <div className="inventory-report-wrap">
       <h1>Inventory Report</h1>
-      {/* Header with timestamp */}
+      {/* Header with view toggle */}
       <div className="report-header">
-        <div>
-          <div className="timestamp">
-            Last Updated: {formattedDate} | {formattedTime}
-          </div>
-        </div>
+        <div style={{ flex: 1 }}></div>
         <div className="view-toggle">
           <button 
             className={`toggle-btn ${showGraph ? 'active' : ''}`}
