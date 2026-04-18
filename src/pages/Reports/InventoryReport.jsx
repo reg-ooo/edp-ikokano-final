@@ -1,6 +1,5 @@
 // InventoryReport.jsx
 import { useState, useEffect } from 'react';
-import LastUpdated from '../../components/LastUpdated';
 import './InventoryReport.css';
 
 const STORAGE_KEY = 'inventoryData';
@@ -85,13 +84,9 @@ function InventoryReport() {
   return (
     <div className="inventory-report-wrap">
       <h1>Inventory Report</h1>
-      {/* Header with timestamp */}
+      {/* Header with view toggle */}
       <div className="report-header">
-        <div>
-          <div className="timestamp">
-            <LastUpdated storageKey="inventory" />
-          </div>
-        </div>
+        <div style={{ flex: 1 }}></div>
         <div className="view-toggle">
           <button 
             className={`toggle-btn ${showGraph ? 'active' : ''}`}
