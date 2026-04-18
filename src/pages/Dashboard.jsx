@@ -69,6 +69,9 @@ function Dashboard() {
   }, []);
 
   const totalBookings = bookings.length;
+  const pendingBookings = bookings.filter((booking) => booking.status === 'pending').length;
+  const inProgressBookings = bookings.filter((booking) => booking.status === 'in-progress' || booking.status === 'in progress').length;
+  const completedBookings = bookings.filter((booking) => booking.status === 'completed').length;
   const totalRevenue = bookings.reduce((sum, booking) => {
     const priceMatch = booking.service.match(/₱([\d,]+)/);
     if (priceMatch) {
@@ -76,6 +79,25 @@ function Dashboard() {
     }
     return sum;
   }, 0);
+
+  const statusItems = [
+    { key: 'pending', label: 'Pending', color: '#ffc107', value: pendingBookings },
+    { key: 'in-progress', label: 'In Progress', color: '#17a2b8', value: inProgressBookings },
+    { key: 'completed', label: 'Completed', color: '#28a745', value: completedBookings }
+  ];
+
+  const statusTotal = statusItems.reduce((sum, item) => sum + item.value, 0);
+  const circumference = 2 * Math.PI * 44;
+  let offset = 0;
+
+  const pieSegments = statusItems
+    .filter((item) => item.value > 0)
+    .map((item) => {
+      const dash = Number(((item.value / statusTotal) * circumference).toFixed(2));
+      const segment = { ...item, dash, offset };
+      offset += dash;
+      return segment;
+    });
 
   const recentActivities = bookings.slice(0, 5);
 
@@ -91,6 +113,10 @@ function Dashboard() {
             <p className="stat-value">{totalBookings}</p>
           </div>
           <div className="stat-card">
+            <h3>Pending Bookings</h3>
+            <p className="stat-value">{pendingBookings}</p>
+          </div>
+          <div className="stat-card">
             <h3>Total Revenue</h3>
             <p className="stat-value">₱{totalRevenue.toLocaleString()}</p>
           </div>
@@ -101,6 +127,48 @@ function Dashboard() {
         </div>
       </div>
       
+      <div className="status-breakdown">
+        <h2>Booking Status Breakdown</h2>
+        <div className="pie-chart-row">
+          <div className="pie-chart">
+            <svg viewBox="0 0 120 120">
+              <circle cx="60" cy="60" r="44" fill="transparent" stroke="#e9ecef" strokeWidth="20" />
+              {statusTotal > 0 && pieSegments.map((segment) => (
+                <circle
+                  key={segment.key}
+                  cx="60"
+                  cy="60"
+                  r="44"
+                  fill="transparent"
+                  stroke={segment.color}
+                  strokeWidth="20"
+                  strokeDasharray={`${segment.dash} ${circumference}`}
+                  strokeDashoffset={-segment.offset}
+                  strokeLinecap="round"
+                  transform="rotate(-90 60 60)"
+                />
+              ))}
+              {statusTotal === 0 && (
+                <text x="60" y="60" textAnchor="middle" dominantBaseline="middle" fill="#666" fontSize="12">
+                  No data
+                </text>
+              )}
+            </svg>
+          </div>
+          <div className="pie-legend">
+            {statusItems.map((item) => {
+              const percent = statusTotal ? Math.round((item.value / statusTotal) * 100) : 0;
+              return (
+                <div key={item.key} className="pie-legend-item">
+                  <span className="pie-legend-color" style={{ backgroundColor: item.color }} />
+                  <span>{item.label}: {item.value} ({percent}%)</span>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </div>
+
       <div className="recent-activity">
         <h2>Recent Activity</h2>
         {recentActivities.length > 0 ? (
