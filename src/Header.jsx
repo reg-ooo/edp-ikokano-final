@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react'
 import notificationIcon from './assets/notification.svg'
-import profileIcon from './assets/user.svg'
 import hamburgerIcon from './assets/hamburger.svg'
 import './Header.css'
 
@@ -38,10 +37,6 @@ function Header({ isOpen, setOpen }) {
 
   const handleNotificationClick = () => {
     setShowBanner(!showBanner)
-  }
-
-  const handleProfileClick = () => {
-    console.log('Profile clicked')
   }
 
   return (
@@ -109,15 +104,6 @@ function Header({ isOpen, setOpen }) {
             </div>
           )}
         </div>
-
-        <button
-          className="icon-button"
-          onClick={handleProfileClick}
-          aria-label="Profile"
-          title="Profile"
-        >
-          <img src={profileIcon} alt="Profile" />
-        </button>
       </div>
     </header>
   )

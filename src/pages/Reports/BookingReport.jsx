@@ -1,40 +1,35 @@
 // BookingReport.jsx
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import './BookingReport.css';
 
 const STORAGE_KEY = 'manageBookingsData';
-
-const serviceOptions = ['All Services', 'Premium Wash', 'Basic Exterior', 'Deluxe Wash', 'Basic Wash'];
+const SERVICES_STORAGE_KEY = 'manageServicesList';
 
 function BookingReport() {
-  const [bookings, setBookings] = useState(() => {
+  const [rawBookings, setRawBookings] = useState(() => {
     const saved = localStorage.getItem(STORAGE_KEY)
     if (saved) {
       try {
-        const data = JSON.parse(saved)
-        // Map ManageBookings data to BookingReport format
-        return data.map(b => ({
-          id: b.id,
-          refNumber: b.id,
-          status: b.status ? b.status.toUpperCase() === 'IN-PROGRESS' ? 'IN PROGRESS' : b.status.toUpperCase() : 'PENDING',
-          customerName: b.name || '',
-          vehicle: b.vehicleModel ? `${b.vehicleBrand} ${b.vehicleModel}` : b.details || '',
-          serviceDetails: b.serviceAvails || b.service || '',
-          assignedStaff: 'Unassigned',
-          startTime: '',
-          endTime: '',
-          duration: '30 mins',
-          amount: 0,
-          paymentMethod: 'Cash'
-        }))
+        return JSON.parse(saved)
       } catch (e) {
         console.error('Error parsing saved bookings:', e)
-        return []
       }
     }
     return []
   })
-  
+
+  const [services, setServices] = useState(() => {
+    const saved = localStorage.getItem(SERVICES_STORAGE_KEY)
+    if (saved) {
+      try {
+        return JSON.parse(saved)
+      } catch (e) {
+        console.error('Error parsing saved services:', e)
+      }
+    }
+    return []
+  })
+
   const [searchTerm, setSearchTerm] = useState('');
   const [serviceFilter, setServiceFilter] = useState('All Services');
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -54,96 +49,137 @@ function BookingReport() {
     paymentMethod: 'Cash'
   });
 
-  // Refresh bookings when ManageBookings data changes (via storage event listener)
+  const parseServiceAmount = (text = '') => {
+    const match = text.match(/₱\s*([\d,]+(?:\.\d+)?)/)
+    if (match) {
+      return parseFloat(match[1].replace(/,/g, ''))
+    }
+    const digits = text.replace(/[^\d.]/g, '')
+    return digits ? parseFloat(digits) : 0
+  }
+
+  const findService = (serviceName) => {
+    return services.find((s) => s.serviceName === serviceName)
+  }
+
+  const mapBookingEntry = (booking) => {
+    const serviceName = booking.serviceAvails || (booking.service || '').split(' - ₱')[0] || ''
+    const service = findService(serviceName)
+    const amount = parseServiceAmount(booking.service || serviceName) || Number(service?.servicePrice || 0)
+
+    return {
+      id: booking.id,
+      refNumber: booking.id,
+      status: booking.status
+        ? booking.status.toUpperCase() === 'IN-PROGRESS'
+          ? 'IN PROGRESS'
+          : booking.status.toUpperCase()
+        : 'PENDING',
+      customerName: booking.name || '',
+      vehicle: booking.vehicleModel
+        ? `${booking.vehicleBrand} ${booking.vehicleModel}`
+        : booking.details || '',
+      serviceDetails: serviceName || 'Unknown Service',
+      assignedStaff: booking.assignedStaff || 'Unassigned',
+      startTime: booking.startTime || '',
+      endTime: booking.endTime || '',
+      duration: service?.duration || booking.duration || '--',
+      amount,
+      paymentMethod: booking.paymentMethod || 'Cash',
+      serviceDate: booking.serviceDate || ''
+    }
+  }
+
+  const bookings = useMemo(() => rawBookings.map(mapBookingEntry), [rawBookings, services])
+
+  const serviceOptions = ['All Services', ...new Set(services.map((s) => s.serviceName))]
+
+  useEffect(() => {
+    const saved = localStorage.getItem(SERVICES_STORAGE_KEY)
+    if (saved) {
+      try {
+        setServices(JSON.parse(saved))
+      } catch (e) {
+        console.error('Error parsing saved services:', e)
+      }
+    }
+  }, [])
+
+  useEffect(() => {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(rawBookings))
+  }, [rawBookings])
+
   useEffect(() => {
     const handleStorageChange = () => {
-      const saved = localStorage.getItem(STORAGE_KEY)
-      if (saved) {
+      const savedBookings = localStorage.getItem(STORAGE_KEY)
+      const savedServices = localStorage.getItem(SERVICES_STORAGE_KEY)
+
+      if (savedBookings) {
         try {
-          const data = JSON.parse(saved)
-          const mapped = data.map(b => ({
-            id: b.id,
-            refNumber: b.id,
-            status: b.status ? b.status.toUpperCase() === 'IN-PROGRESS' ? 'IN PROGRESS' : b.status.toUpperCase() : 'PENDING',
-            customerName: b.name || '',
-            vehicle: b.vehicleModel ? `${b.vehicleBrand} ${b.vehicleModel}` : b.details || '',
-            serviceDetails: b.serviceAvails || b.service || '',
-            assignedStaff: 'Unassigned',
-            startTime: '',
-            endTime: '',
-            duration: '30 mins',
-            amount: 0,
-            paymentMethod: 'Cash'
-          }))
-          setBookings(mapped)
+          setRawBookings(JSON.parse(savedBookings))
         } catch (e) {
-          console.error('Error parsing saved bookings:', e)
+          console.error('Error parsing bookings from storage event:', e)
+        }
+      }
+
+      if (savedServices) {
+        try {
+          setServices(JSON.parse(savedServices))
+        } catch (e) {
+          console.error('Error parsing services from storage event:', e)
         }
       }
     }
 
-    // Listen for storage changes from other tabs/windows
     window.addEventListener('storage', handleStorageChange)
-    return () => window.removeEventListener('storage', handleStorageChange)
+
+    const interval = setInterval(handleStorageChange, 1000)
+
+    return () => {
+      window.removeEventListener('storage', handleStorageChange)
+      clearInterval(interval)
+    }
   }, [])
 
-  // Sync with ManageBookings data periodically
-  useEffect(() => {
-    const interval = setInterval(() => {
-      const saved = localStorage.getItem(STORAGE_KEY)
-      if (saved) {
-        try {
-          const data = JSON.parse(saved)
-          const mapped = data.map(b => ({
-            id: b.id,
-            refNumber: b.id,
-            status: b.status ? b.status.toUpperCase() === 'IN-PROGRESS' ? 'IN PROGRESS' : b.status.toUpperCase() : 'PENDING',
-            customerName: b.name || '',
-            vehicle: b.vehicleModel ? `${b.vehicleBrand} ${b.vehicleModel}` : b.details || '',
-            serviceDetails: b.serviceAvails || b.service || '',
-            assignedStaff: 'Unassigned',
-            startTime: '',
-            endTime: '',
-            duration: '30 mins',
-            amount: 0,
-            paymentMethod: 'Cash'
-          }))
-          setBookings(mapped)
-        } catch (e) {
-          console.error('Error syncing bookings:', e)
-        }
-      }
-    }, 1000)
+  const formatWaitTime = (minutes) => {
+    if (minutes >= 60) {
+      const hours = Math.floor(minutes / 60)
+      const remainingMinutes = Math.round(minutes % 60)
+      return `${hours}h ${remainingMinutes}m`
+    }
+    return `${Math.round(minutes)} mins`
+  }
 
-    return () => clearInterval(interval)
-  }, [])
+  const todayBookings = bookings.length
+  const netRevenue = bookings.reduce((sum, booking) => sum + booking.amount, 0)
+  const activeBay = `${bookings.filter((b) => b.status === 'IN PROGRESS').length}/5`
 
-  // Calculate summary metrics
-  const todayBookings = bookings.length;
-  const netRevenue = bookings.reduce((sum, booking) => sum + booking.amount, 0);
-  const activeBay = `${bookings.filter(b => b.status === 'IN PROGRESS').length}/5`;
-  
-  // Calculate average wait time (simplified - based on pending/waiting bookings)
-  const waitingBookings = bookings.filter(b => b.status === 'WAITING' || b.status === 'PENDING');
-  const avgWaitTime = waitingBookings.length > 0 ? '15 mins' : '0 mins';
+  const waitingBookings = bookings.filter((b) => b.status === 'PENDING')
+  const avgWaitTime = waitingBookings.length
+    ? formatWaitTime(
+        waitingBookings.reduce((sum, booking) => {
+          if (!booking.serviceDate) return sum
+          const diff = Math.max(0, new Date() - new Date(booking.serviceDate))
+          return sum + diff / 60000
+        }, 0) / waitingBookings.length
+      )
+    : '0 mins'
 
-  // Filter bookings based on search and service filter
-  const filteredBookings = bookings.filter(booking => {
-    // Search by name or plate
-    const matchesSearch = searchTerm === '' || 
+  const filteredBookings = bookings.filter((booking) => {
+    const matchesSearch =
+      searchTerm === '' ||
       booking.customerName.toLowerCase().includes(searchTerm.toLowerCase()) ||
       booking.vehicle.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      booking.refNumber.toLowerCase().includes(searchTerm.toLowerCase());
-    
-    // Filter by service
-    const matchesService = serviceFilter === 'All Services' || 
-      booking.serviceDetails.includes(serviceFilter);
-    
-    return matchesSearch && matchesService;
-  });
+      booking.refNumber.toLowerCase().includes(searchTerm.toLowerCase())
+
+    const matchesService =
+      serviceFilter === 'All Services' || booking.serviceDetails === serviceFilter
+
+    return matchesSearch && matchesService
+  })
 
   const openCreateModal = () => {
-    setEditingBooking(null);
+    setEditingBooking(null)
     setFormData({
       refNumber: `#${String(bookings.length + 1).padStart(4, '0')}`,
       status: 'PENDING',
@@ -156,12 +192,12 @@ function BookingReport() {
       duration: '',
       amount: '',
       paymentMethod: 'Cash'
-    });
-    setIsModalOpen(true);
-  };
+    })
+    setIsModalOpen(true)
+  }
 
   const openEditModal = (booking) => {
-    setEditingBooking(booking);
+    setEditingBooking(booking)
     setFormData({
       refNumber: booking.refNumber,
       status: booking.status,
@@ -174,64 +210,82 @@ function BookingReport() {
       duration: booking.duration,
       amount: booking.amount.toString(),
       paymentMethod: booking.paymentMethod
-    });
-    setIsModalOpen(true);
-  };
+    })
+    setIsModalOpen(true)
+  }
 
   const closeModal = () => {
-    setIsModalOpen(false);
-    setEditingBooking(null);
-  };
+    setIsModalOpen(false)
+    setEditingBooking(null)
+  }
+
+  const handleServiceSelection = (value) => {
+    const service = findService(value)
+    setFormData((prev) => ({
+      ...prev,
+      serviceDetails: value,
+      amount: service ? service.servicePrice : prev.amount,
+      duration: service ? service.duration : prev.duration
+    }))
+  }
 
   const handleFormSubmit = (e) => {
-    e.preventDefault();
-    
+    e.preventDefault()
+
     if (!formData.customerName.trim() || !formData.vehicle.trim() || !formData.serviceDetails.trim() || !formData.amount) {
-      alert('Please fill in all required fields.');
-      return;
+      alert('Please fill in all required fields.')
+      return
     }
 
-    const amountNum = parseFloat(formData.amount);
+    const amountNum = parseFloat(formData.amount)
+    const servicePrice = Number(findService(formData.serviceDetails)?.servicePrice || amountNum || 0)
+
     const newBooking = {
       id: editingBooking ? editingBooking.id : Date.now().toString(),
-      refNumber: formData.refNumber,
+      serviceDate: editingBooking?.serviceDate || '',
       status: formData.status,
-      customerName: formData.customerName,
+      name: formData.customerName,
       vehicle: formData.vehicle,
-      serviceDetails: formData.serviceDetails,
+      serviceAvails: formData.serviceDetails,
+      service: `${formData.serviceDetails} - ₱${servicePrice}`,
       assignedStaff: formData.assignedStaff || 'Unassigned',
       startTime: formData.startTime,
       endTime: formData.endTime,
-      duration: formData.duration || '--',
-      amount: amountNum,
+      duration: formData.duration || findService(formData.serviceDetails)?.duration || '--',
+      amount: servicePrice,
       paymentMethod: formData.paymentMethod
-    };
+    }
 
     if (editingBooking) {
-      setBookings(prev => prev.map(b => b.id === editingBooking.id ? newBooking : b));
+      setRawBookings((prev) => prev.map((b) => (b.id === editingBooking.id ? newBooking : b)))
     } else {
-      // FIXED: Added to BOTTOM instead of TOP
-      setBookings(prev => [...prev, newBooking]);  // ← Changed from [newBooking, ...prev]
+      setRawBookings((prev) => [newBooking, ...prev])
     }
-    
-    closeModal();
-  };
+
+    closeModal()
+  }
 
   const handleDelete = (id, customerName) => {
     if (window.confirm(`Are you sure you want to delete booking for ${customerName}?`)) {
-      setBookings(prev => prev.filter(booking => booking.id !== id));
+      setRawBookings((prev) => prev.filter((booking) => booking.id !== id))
     }
-  };
+  }
 
   const getStatusBadgeClass = (status) => {
-    switch(status) {
-      case 'COMPLETED': return 'status-completed';
-      case 'IN PROGRESS': return 'status-progress';
-      case 'PENDING': return 'status-pending';
-      case 'WAITING': return 'status-waiting';
-      default: return '';
+    switch (status) {
+      case 'COMPLETED':
+        return 'status-completed'
+      case 'IN PROGRESS':
+        return 'status-progress'
+      case 'PENDING':
+        return 'status-pending'
+      case 'WAITING':
+        return 'status-waiting'
+      default:
+        return ''
     }
-  };
+  }
+
 
   return (
     <div className="booking-report-wrap">
@@ -390,14 +444,29 @@ function BookingReport() {
 
               <div className="form-row">
                 <div className="form-group">
-                  <label>Service Details *</label>
-                  <input 
-                    type="text" 
-                    value={formData.serviceDetails} 
-                    onChange={(e) => setFormData({...formData, serviceDetails: e.target.value})}
-                    placeholder="e.g., Premium Wash, Basic Exterior"
-                    required
-                  />
+                  <label>Service *</label>
+                  {services.length > 0 ? (
+                    <select
+                      value={formData.serviceDetails}
+                      onChange={(e) => handleServiceSelection(e.target.value)}
+                      required
+                    >
+                      <option value="">Select Service</option>
+                      {services.map((service) => (
+                        <option key={service.id} value={service.serviceName}>
+                          {`${service.serviceName} - ₱${service.servicePrice}`}
+                        </option>
+                      ))}
+                    </select>
+                  ) : (
+                    <input
+                      type="text"
+                      value={formData.serviceDetails}
+                      onChange={(e) => setFormData({ ...formData, serviceDetails: e.target.value })}
+                      placeholder="Enter service details"
+                      required
+                    />
+                  )}
                 </div>
                 <div className="form-group">
                   <label>Assigned Staff</label>

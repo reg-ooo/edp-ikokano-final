@@ -87,3 +87,48 @@
   display: block;
   margin-top: 5px;
 }
+
+.status-breakdown {
+  background: #f8f9fa;
+  border: 1px solid #e9ecef;
+  border-radius: 8px;
+  padding: 20px;
+  margin-bottom: 40px;
+}
+
+.pie-chart-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+  align-items: center;
+}
+
+.pie-chart {
+  min-width: 120px;
+  min-height: 120px;
+}
+
+.pie-chart svg {
+  width: 120px;
+  height: 120px;
+}
+
+.pie-legend {
+  display: grid;
+  gap: 10px;
+  flex: 1;
+}
+
+.pie-legend-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: #444;
+  font-size: 0.95rem;
+}
+
+.pie-legend-color {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+}

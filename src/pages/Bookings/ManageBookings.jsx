@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react'
 import './ManageBookings.css'
 
 const STORAGE_KEY = 'manageBookingsData'
+const SERVICES_STORAGE_KEY = 'manageServicesList'
 
 const initialBookings = [
   {
@@ -54,6 +55,8 @@ function ManageBookings() {
   const [sortOrder, setSortOrder] = useState('asc')
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [editBookingId, setEditBookingId] = useState(null)
+  const [services, setServices] = useState([])
+  const [selectedCategory, setSelectedCategory] = useState('')
 
   const [formData, setFormData] = useState({
     name: '',
@@ -66,6 +69,18 @@ function ManageBookings() {
     status: 'pending'
   })
 
+  // Load services from ManageServices
+  useEffect(() => {
+    const saved = localStorage.getItem(SERVICES_STORAGE_KEY)
+    if (saved) {
+      try {
+        setServices(JSON.parse(saved))
+      } catch (e) {
+        console.error('Error loading services:', e)
+      }
+    }
+  }, [])
+
   // Save to localStorage whenever bookings change
   useEffect(() => {
     try {
@@ -77,6 +92,7 @@ function ManageBookings() {
 
   const openCreateForm = () => {
     setEditBookingId(null)
+    setSelectedCategory('')
     setFormData({
       name: '',
       contact: '',
@@ -92,6 +108,8 @@ function ManageBookings() {
 
   const openEditForm = (booking) => {
     setEditBookingId(booking.id)
+    const service = services.find(s => s.serviceName === booking.serviceAvails)
+    setSelectedCategory(service?.serviceCat || '')
     setFormData({
       name: booking.name,
       contact: booking.contact,
@@ -110,6 +128,11 @@ function ManageBookings() {
     setEditBookingId(null)
   }
 
+  const getServicePrice = (serviceName) => {
+    const service = services.find(s => s.serviceName === serviceName)
+    return service ? service.servicePrice : '0'
+  }
+
   const handleFormSubmit = (e) => {
     e.preventDefault()
 
@@ -117,6 +140,8 @@ function ManageBookings() {
       alert('Please complete required fields: Name, Service Date, and Service.')
       return
     }
+
+    const servicePrice = getServicePrice(formData.serviceAvails)
 
     // Only validate completed date if status is completed and user didn't provide one
     let completedDateValue = formData.completedDate
@@ -147,7 +172,7 @@ function ManageBookings() {
                 serviceDate: formData.serviceDate,
                 completedDate: completedDateValue,
                 status: formData.status,
-                service: `${formData.serviceAvails} - ₱1,000`,
+                service: `${formData.serviceAvails} - ₱${servicePrice}`,
                 details: `${formData.vehicleModel} - ${formData.serviceAvails}`
               }
             : item
@@ -165,7 +190,7 @@ function ManageBookings() {
         serviceDate: formData.serviceDate,
         completedDate: completedDateValue,
         status: formData.status,
-        service: `${formData.serviceAvails} - ₱1,000`,
+        service: `${formData.serviceAvails} - ₱${servicePrice}`,
         details: `${formData.vehicleModel} - ${formData.serviceAvails}`
       }
       setBookings((prev) => [newBooking, ...prev])
@@ -317,8 +342,25 @@ function ManageBookings() {
                 <input value={formData.vehicleBrand} onChange={(e) => setFormData({ ...formData, vehicleBrand: e.target.value })} />
               </div>
               <div className="modal-row">
+                <label>Service Category</label>
+                <select value={selectedCategory} onChange={(e) => {
+                  setSelectedCategory(e.target.value)
+                  setFormData({ ...formData, serviceAvails: '' })
+                }}>
+                  <option value="">Select Category</option>
+                  {[...new Set(services.map(s => s.serviceCat))].map(cat => (
+                    <option key={cat} value={cat}>{cat}</option>
+                  ))}
+                </select>
+              </div>
+              <div className="modal-row">
                 <label>Service Availed</label>
-                <input value={formData.serviceAvails} onChange={(e) => setFormData({ ...formData, serviceAvails: e.target.value })} required />
+                <select value={formData.serviceAvails} onChange={(e) => setFormData({ ...formData, serviceAvails: e.target.value })} required>
+                  <option value="">Select Service</option>
+                  {services.filter(s => s.serviceCat === selectedCategory).map(service => (
+                    <option key={service.id} value={service.serviceName}>{service.serviceName}</option>
+                  ))}
+                </select>
               </div>
               <div className="modal-row">
                 <label>Date of Service Availed</label>
