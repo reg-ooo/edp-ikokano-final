@@ -1,5 +1,6 @@
 // Payroll.jsx
 import { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import './Payroll.css';
 
 const STORAGE_KEY = 'payrollData';
@@ -84,8 +85,14 @@ function Payroll() {
   
   const [searchTerm, setSearchTerm] = useState('');
   const [typeFilter, setTypeFilter] = useState('All');
+  // FIX #2 — Sort state
+  const [sortField, setSortField] = useState('name');
+  const [sortOrder, setSortOrder] = useState('asc');
+
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingEmployee, setEditingEmployee] = useState(null);
+  // FIX #1 — View detail panel state
+  const [viewEmployee, setViewEmployee] = useState(null);
 
   const [formData, setFormData] = useState({
     name: '',
@@ -96,10 +103,12 @@ function Payroll() {
     deductions: ''
   });
 
-  // Save to localStorage whenever employees change
+  // Save to localStorage whenever employees change + notify Dashboard
   useEffect(() => {
     try {
       localStorage.setItem(`${STORAGE_KEY}_employees`, JSON.stringify(employees))
+      // FIX #5 — Dispatch event so Dashboard can pick up payroll stats
+      window.dispatchEvent(new CustomEvent('payrollUpdated'))
     } catch (e) {
       console.error('Error saving employees to localStorage:', e)
     }
@@ -108,19 +117,34 @@ function Payroll() {
   // Calculate totals
   const totalBasePay = employees.reduce((sum, emp) => sum + (emp.basePay || 0), 0);
   const totalCommissions = employees.reduce((sum, emp) => sum + (emp.commission || 0), 0);
-  const totalDeductions = employees.reduce((sum, emp) => sum + (emp.deductions || 0), 0);
-  const netPayout = employees.reduce((sum, emp) => sum + (emp.netPay || 0), 0);
 
-  // Filter employees
-  const filteredEmployees = employees.filter(emp => {
-    const matchesSearch = searchTerm === '' || 
-      emp.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      emp.role.toLowerCase().includes(searchTerm.toLowerCase());
-    
-    const matchesType = typeFilter === 'All' || emp.type === typeFilter;
-    
-    return matchesSearch && matchesType;
-  });
+  // Scroll-lock: disable body scroll when any modal/panel is open
+  useEffect(() => {
+    const isOpen = isModalOpen || !!viewEmployee;
+    document.body.style.overflow = isOpen ? 'hidden' : '';
+    return () => { document.body.style.overflow = ''; };
+  }, [isModalOpen, viewEmployee]);
+
+  // FIX #2 — Filter + sort employees
+  const filteredEmployees = employees
+    .filter(emp => {
+      const matchesSearch = searchTerm === '' || 
+        emp.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        emp.role.toLowerCase().includes(searchTerm.toLowerCase());
+      const matchesType = typeFilter === 'All' || emp.type === typeFilter;
+      return matchesSearch && matchesType;
+    })
+    .sort((a, b) => {
+      let cmp = 0;
+      if (sortField === 'name') {
+        cmp = a.name.localeCompare(b.name);
+      } else if (sortField === 'netPay') {
+        cmp = (a.netPay || 0) - (b.netPay || 0);
+      } else if (sortField === 'basePay') {
+        cmp = (a.basePay || a.commission || 0) - (b.basePay || b.commission || 0);
+      }
+      return sortOrder === 'asc' ? cmp : -cmp;
+    });
 
   // Calculate net pay for an employee
   const calculateNetPay = (type, basePay, commission, deductions) => {
@@ -132,6 +156,14 @@ function Payroll() {
     }
     return Math.max(0, total);
   };
+
+  // FIX #4 — Compute live net pay preview from form fields
+  const liveNetPay = calculateNetPay(
+    formData.type,
+    parseFloat(formData.basePay) || 0,
+    parseFloat(formData.commission) || 0,
+    parseFloat(formData.deductions) || 0
+  );
 
   const openCreateModal = () => {
     setEditingEmployee(null);
@@ -162,6 +194,15 @@ function Payroll() {
   const closeModal = () => {
     setIsModalOpen(false);
     setEditingEmployee(null);
+  };
+
+  // FIX #1 — Open / close detail view
+  const openViewPanel = (employee) => {
+    setViewEmployee(employee);
+  };
+
+  const closeViewPanel = () => {
+    setViewEmployee(null);
   };
 
   const handleFormSubmit = (e) => {
@@ -200,8 +241,11 @@ function Payroll() {
 
     if (editingEmployee) {
       setEmployees(prev => prev.map(emp => emp.id === editingEmployee.id ? newEmployee : emp));
+      // If the detail view was open for this employee, refresh it
+      if (viewEmployee && viewEmployee.id === editingEmployee.id) {
+        setViewEmployee(newEmployee);
+      }
     } else {
-      // Added to BOTTOM for chronological employee list
       setEmployees(prev => [...prev, newEmployee]);
     }
     
@@ -211,6 +255,7 @@ function Payroll() {
   const handleDelete = (id, name) => {
     if (window.confirm(`Are you sure you want to delete ${name} from payroll?`)) {
       setEmployees(prev => prev.filter(emp => emp.id !== id));
+      if (viewEmployee && viewEmployee.id === id) closeViewPanel();
     }
   };
 
@@ -244,6 +289,10 @@ function Payroll() {
       {/* Summary Cards */}
       <div className="payroll-summary-cards">
         <div className="summary-card">
+          <h4>Total Employees</h4>
+          <p className="summary-amount">{employees.length}</p>
+        </div>
+        <div className="summary-card">
           <h4>Total Base Pay</h4>
           <p className="summary-amount">₱{totalBasePay.toLocaleString()}</p>
         </div>
@@ -251,17 +300,9 @@ function Payroll() {
           <h4>Total Commissions</h4>
           <p className="summary-amount">₱{totalCommissions.toLocaleString()}</p>
         </div>
-        <div className="summary-card">
-          <h4>Deductions</h4>
-          <p className="summary-amount negative">-₱{totalDeductions.toLocaleString()}</p>
-        </div>
-        <div className="summary-card">
-          <h4>Net Payout</h4>
-          <p className="summary-amount positive">₱{netPayout.toLocaleString()}</p>
-        </div>
       </div>
 
-      {/* Search and Filter Bar */}
+      {/* Search, Filter and Sort Bar */}
       <div className="payroll-search-bar">
         <div className="search-wrapper">
           <svg className="search-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -276,6 +317,7 @@ function Payroll() {
             onChange={(e) => setSearchTerm(e.target.value)}
           />
         </div>
+        {/* Filter */}
         <select 
           className="type-filter"
           value={typeFilter}
@@ -285,12 +327,30 @@ function Payroll() {
           <option value="INTERNAL">Internal</option>
           <option value="OUTSOURCE">Outsource</option>
         </select>
+        {/* FIX #2 — Sort controls */}
+        <select
+          className="type-filter"
+          value={sortField}
+          onChange={(e) => setSortField(e.target.value)}
+        >
+          <option value="name">Sort by Name</option>
+          <option value="netPay">Sort by Net Pay</option>
+          <option value="basePay">Sort by Base/Commission</option>
+        </select>
+        <select
+          className="type-filter"
+          value={sortOrder}
+          onChange={(e) => setSortOrder(e.target.value)}
+        >
+          <option value="asc">ASC</option>
+          <option value="desc">DESC</option>
+        </select>
         <button className="add-btn" onClick={openCreateModal}>
           + Add Employee
         </button>
       </div>
 
-      {/* Payroll Table */}
+      {/* Payroll Table — FIX #3: Added Net Pay column */}
       <div className="payroll-table-container">
         <table className="payroll-table">
           <thead>
@@ -299,7 +359,8 @@ function Payroll() {
               <th>Type</th>
               <th>Base / Rate</th>
               <th>Commission (Outsource)</th>
-              <th>Deductions / VA LE</th>
+              <th>Deductions</th>
+              <th>Net Pay</th>
               <th>Actions</th>
             </tr>
           </thead>
@@ -324,8 +385,16 @@ function Payroll() {
                 <td className="amount-cell deduction">
                   {employee.deductions ? `-${formatCurrency(employee.deductions)}` : '---'}
                 </td>
+                {/* FIX #3 — Net Pay column */}
+                <td className="amount-cell net-pay-cell">
+                  {formatCurrency(employee.netPay)}
+                </td>
                 <td>
                   <div className="action-buttons">
+                    {/* FIX #1 — View button */}
+                    <button className="view-btn" onClick={() => openViewPanel(employee)}>
+                      View
+                    </button>
                     <button className="edit-btn" onClick={() => openEditModal(employee)}>
                       Edit
                     </button>
@@ -338,7 +407,7 @@ function Payroll() {
             ))}
             {filteredEmployees.length === 0 && (
               <tr>
-                <td colSpan="6" className="empty-state">
+                <td colSpan="7" className="empty-state">
                   <div className="empty-message">
                     No employees found
                   </div>
@@ -349,8 +418,65 @@ function Payroll() {
         </table>
       </div>
 
-      {/* Add/Edit Modal */}
-      {isModalOpen && (
+      {/* Detail View Panel — rendered via portal to escape panel clipping */}
+      {viewEmployee && createPortal(
+        <div className="modal-overlay" onClick={closeViewPanel}>
+          <div className="modal detail-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="detail-modal-header">
+              <h3>Employee Details</h3>
+              <button className="detail-close-btn" onClick={closeViewPanel}>✕</button>
+            </div>
+            <div className="detail-avatar">
+              {viewEmployee.name.charAt(0)}
+            </div>
+            <div className="detail-name">{viewEmployee.name}</div>
+            <div className="detail-role">{viewEmployee.role}</div>
+            <span className={`type-badge ${viewEmployee.type === 'INTERNAL' ? 'internal' : 'outsource'}`}>
+              {viewEmployee.type}
+            </span>
+
+            <div className="detail-grid">
+              <div className="detail-item">
+                <span className="detail-label">Base Pay</span>
+                <span className="detail-value">
+                  {viewEmployee.type === 'INTERNAL' ? formatCurrency(viewEmployee.basePay) : '---'}
+                </span>
+              </div>
+              <div className="detail-item">
+                <span className="detail-label">Commission</span>
+                <span className="detail-value">
+                  {viewEmployee.type === 'OUTSOURCE' ? formatCurrency(viewEmployee.commission) : '---'}
+                </span>
+              </div>
+              <div className="detail-item">
+                <span className="detail-label">Deductions</span>
+                <span className="detail-value deduction-value">
+                  {viewEmployee.deductions ? `-${formatCurrency(viewEmployee.deductions)}` : '---'}
+                </span>
+              </div>
+              <div className="detail-item net-pay-highlight">
+                <span className="detail-label">Net Pay</span>
+                <span className="detail-value net-pay-value">
+                  {formatCurrency(viewEmployee.netPay)}
+                </span>
+              </div>
+            </div>
+
+            <div className="detail-actions">
+              <button className="submit-btn" onClick={() => { closeViewPanel(); openEditModal(viewEmployee); }}>
+                Edit Employee
+              </button>
+              <button className="cancel-btn" onClick={closeViewPanel}>
+                Close
+              </button>
+            </div>
+          </div>
+        </div>,
+        document.body
+      )}
+
+      {/* Add/Edit Modal — rendered via portal to escape panel clipping */}
+      {isModalOpen && createPortal(
         <div className="modal-overlay" onClick={closeModal}>
           <div className="modal" onClick={(e) => e.stopPropagation()}>
             <h3>{editingEmployee ? 'Edit Employee' : 'Add New Employee'}</h3>
@@ -358,9 +484,9 @@ function Payroll() {
               <div className="form-row">
                 <div className="form-group">
                   <label>Employee Name *</label>
-                  <input 
-                    type="text" 
-                    value={formData.name} 
+                  <input
+                    type="text"
+                    value={formData.name}
                     onChange={(e) => setFormData({...formData, name: e.target.value})}
                     placeholder="e.g., Alejandro"
                     required
@@ -368,9 +494,9 @@ function Payroll() {
                 </div>
                 <div className="form-group">
                   <label>Role *</label>
-                  <input 
-                    type="text" 
-                    value={formData.role} 
+                  <input
+                    type="text"
+                    value={formData.role}
                     onChange={(e) => setFormData({...formData, role: e.target.value})}
                     placeholder="e.g., Lead Detailer"
                     required
@@ -380,8 +506,8 @@ function Payroll() {
 
               <div className="form-group">
                 <label>Employment Type *</label>
-                <select 
-                  value={formData.type} 
+                <select
+                  value={formData.type}
                   onChange={(e) => {
                     setFormData({
                       ...formData,
@@ -400,9 +526,9 @@ function Payroll() {
                 <div className="form-group">
                   <label>Base Pay (₱) *</label>
                   <div className="amount-input-wrapper">
-                    <input 
-                      type="number" 
-                      value={formData.basePay} 
+                    <input
+                      type="number"
+                      value={formData.basePay}
                       onChange={(e) => setFormData({...formData, basePay: e.target.value})}
                       placeholder="0.00"
                       required
@@ -417,9 +543,9 @@ function Payroll() {
                   <label>Commission (₱) *</label>
                   <div className="amount-input-wrapper">
                     <span className="currency-symbol">₱</span>
-                    <input 
-                      type="number" 
-                      value={formData.commission} 
+                    <input
+                      type="number"
+                      value={formData.commission}
                       onChange={(e) => setFormData({...formData, commission: e.target.value})}
                       placeholder="0.00"
                       required
@@ -434,9 +560,9 @@ function Payroll() {
               <div className="form-group">
                 <label>Deductions (₱)</label>
                 <div className="amount-input-wrapper">
-                  <input 
-                    type="number" 
-                    value={formData.deductions} 
+                  <input
+                    type="number"
+                    value={formData.deductions}
                     onChange={(e) => setFormData({...formData, deductions: e.target.value})}
                     placeholder="0.00"
                     step="0.01"
@@ -447,6 +573,11 @@ function Payroll() {
                 <small>SSS, PhilHealth, Pag-IBIG, etc.</small>
               </div>
 
+              <div className="net-pay-preview">
+                <span className="net-pay-preview-label">Computed Net Pay</span>
+                <span className="net-pay-preview-value">₱{liveNetPay.toLocaleString()}</span>
+              </div>
+
               <div className="modal-actions">
                 <button type="submit" className="submit-btn">
                   {editingEmployee ? 'Save Changes' : 'Add Employee'}
@@ -455,8 +586,8 @@ function Payroll() {
                   Cancel
                 </button>
                 {editingEmployee && (
-                  <button 
-                    type="button" 
+                  <button
+                    type="button"
                     className="delete-modal-btn"
                     onClick={() => {
                       if (window.confirm(`Delete ${editingEmployee.name} from payroll?`)) {
@@ -471,7 +602,8 @@ function Payroll() {
               </div>
             </form>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </div>
   );
