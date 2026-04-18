@@ -1,5 +1,6 @@
 // InventoryReport.jsx
 import { useState, useEffect } from 'react';
+import LastUpdated from '../../components/LastUpdated';
 import './InventoryReport.css';
 
 const STORAGE_KEY = 'inventoryData';
@@ -81,18 +82,6 @@ function InventoryReport() {
     return '#10b981';
   };
 
-  const currentDateTime = new Date();
-  const formattedDate = currentDateTime.toLocaleDateString('en-US', { 
-    month: 'long', 
-    day: 'numeric', 
-    year: 'numeric' 
-  });
-  const formattedTime = currentDateTime.toLocaleTimeString('en-US', { 
-    hour: '2-digit', 
-    minute: '2-digit',
-    hour12: true
-  });
-
   return (
     <div className="inventory-report-wrap">
       <h1>Inventory Report</h1>
@@ -100,7 +89,7 @@ function InventoryReport() {
       <div className="report-header">
         <div>
           <div className="timestamp">
-            Last Updated: {formattedDate} | {formattedTime}
+            <LastUpdated storageKey="inventory" />
           </div>
         </div>
         <div className="view-toggle">

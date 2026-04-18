@@ -1,11 +1,15 @@
 // Payroll.jsx
 import { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
+import LastUpdated from '../components/LastUpdated';
+import { updateTimestamp } from '../utils/timeUtils';
 import './Payroll.css';
 
 const STORAGE_KEY = 'payrollData';
 
 // Initial payroll data based on the image
+// Commented out for now as it is only used for testing purposes
+/*
 const initialEmployees = [
   {
     id: '1',
@@ -68,6 +72,7 @@ const initialEmployees = [
     netPay: 1300.00
   }
 ];
+*/
 
 function Payroll() {
   const [employees, setEmployees] = useState(() => {
@@ -77,10 +82,10 @@ function Payroll() {
         return JSON.parse(saved)
       } catch (e) {
         console.error('Error parsing saved employees:', e)
-        return initialEmployees
+        return []
       }
     }
-    return initialEmployees
+    return []
   })
   
   const [searchTerm, setSearchTerm] = useState('');
@@ -106,7 +111,16 @@ function Payroll() {
   // Save to localStorage whenever employees change + notify Dashboard
   useEffect(() => {
     try {
+      // Small logic to avoid updating timestamp purely on first page component mount
+      const savedStr = localStorage.getItem(`${STORAGE_KEY}_employees`);
+      const savedArr = savedStr ? JSON.parse(savedStr) : [];
+      const changed = JSON.stringify(savedArr) !== JSON.stringify(employees);
+      
       localStorage.setItem(`${STORAGE_KEY}_employees`, JSON.stringify(employees))
+      if (changed) {
+        updateTimestamp('payroll');
+      }
+      
       // FIX #5 — Dispatch event so Dashboard can pick up payroll stats
       window.dispatchEvent(new CustomEvent('payrollUpdated'))
     } catch (e) {
@@ -265,25 +279,13 @@ function Payroll() {
     return `₱${amount.toLocaleString()}`;
   };
 
-  const currentDateTime = new Date();
-  const formattedDate = currentDateTime.toLocaleDateString('en-US', { 
-    month: 'long', 
-    day: 'numeric', 
-    year: 'numeric' 
-  });
-  const formattedTime = currentDateTime.toLocaleTimeString('en-US', { 
-    hour: '2-digit', 
-    minute: '2-digit',
-    hour12: true
-  });
-
   return (
     <div className="payroll-wrap">
       <h1>Payroll</h1>
       {/* Header with timestamp */}
       <div className="payroll-header">
         <div className="timestamp">
-          Last Updated: {formattedDate} | {formattedTime}
+          <LastUpdated storageKey="payroll" />
         </div>
       </div>
 

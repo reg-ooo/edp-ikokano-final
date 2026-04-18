@@ -1,5 +1,6 @@
 // Inventory.jsx
 import { useState, useEffect } from 'react'
+import { updateTimestamp } from '../utils/timeUtils'
 import './Inventory.css'
 
 const STORAGE_KEY = 'inventoryData'
@@ -54,7 +55,16 @@ function Inventory() {
   // Save to localStorage whenever inventory changes and notify Dashboard
   useEffect(() => {
     try {
+      const savedStr = localStorage.getItem(STORAGE_KEY);
+      const savedArr = savedStr ? JSON.parse(savedStr) : [];
+      const changed = JSON.stringify(savedArr) !== JSON.stringify(inventory);
+
       localStorage.setItem(STORAGE_KEY, JSON.stringify(inventory))
+      
+      if (changed) {
+        updateTimestamp('inventory');
+      }
+
       window.dispatchEvent(new CustomEvent('inventoryUpdated'))
     } catch (e) {
       console.error('Error saving inventory to localStorage:', e)
