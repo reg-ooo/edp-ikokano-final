@@ -256,6 +256,7 @@ function Payroll() {
     if (window.confirm(`Are you sure you want to delete ${name} from payroll?`)) {
       setEmployees(prev => prev.filter(emp => emp.id !== id));
       if (viewEmployee && viewEmployee.id === id) closeViewPanel();
+      if (editingEmployee && editingEmployee.id === id) closeModal();
     }
   };
 
@@ -589,12 +590,7 @@ function Payroll() {
                   <button
                     type="button"
                     className="delete-modal-btn"
-                    onClick={() => {
-                      if (window.confirm(`Delete ${editingEmployee.name} from payroll?`)) {
-                        handleDelete(editingEmployee.id, editingEmployee.name);
-                        closeModal();
-                      }
-                    }}
+                    onClick={() => handleDelete(editingEmployee.id, editingEmployee.name)}
                   >
                     Delete
                   </button>
