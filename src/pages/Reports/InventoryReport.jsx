@@ -2,195 +2,64 @@
 import { useState, useEffect } from 'react';
 import './InventoryReport.css';
 
-const STORAGE_KEY = 'inventoryReportData';
-
-// Initial inventory items based on the image
-const initialInventory = [
-  {
-    id: '1',
-    productName: 'Tire Black Polish',
-    usedIn: 'Exterior Detailing',
-    quantity: 12,
-    unit: 'BOTTLES',
-    lastUpdated: '2026-03-25'
-  },
-  {
-    id: '2',
-    productName: 'Microfiber Towels',
-    usedIn: 'All Services',
-    quantity: 8,
-    unit: 'UNITS',
-    lastUpdated: '2026-03-25'
-  },
-  {
-    id: '3',
-    productName: 'Car Shampoo',
-    usedIn: '',
-    quantity: 2,
-    unit: 'GALLONS',
-    lastUpdated: '2026-03-24'
-  },
-  {
-    id: '4',
-    productName: 'Glass Cleaner',
-    usedIn: 'Interior Detailing',
-    quantity: 15,
-    unit: 'BOTTLES',
-    lastUpdated: '2026-03-23'
-  },
-  {
-    id: '5',
-    productName: 'Wax Paste',
-    usedIn: 'Exterior Detailing',
-    quantity: 6,
-    unit: 'CONTAINERS',
-    lastUpdated: '2026-03-22'
-  },
-  {
-    id: '6',
-    productName: 'Interior Brush',
-    usedIn: 'Interior Detailing',
-    quantity: 10,
-    unit: 'UNITS',
-    lastUpdated: '2026-03-25'
-  }
-];
+const STORAGE_KEY = 'inventoryData';
 
 function InventoryReport() {
   const [inventory, setInventory] = useState(() => {
-    const saved = localStorage.getItem(`${STORAGE_KEY}_inventory`)
+    const saved = localStorage.getItem(STORAGE_KEY)
     if (saved) {
       try {
         return JSON.parse(saved)
       } catch (e) {
         console.error('Error parsing saved inventory:', e)
-        return initialInventory
+        return []
       }
     }
-    return initialInventory
+    return []
   })
   
   const [searchTerm, setSearchTerm] = useState('');
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [editingItem, setEditingItem] = useState(null);
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [showGraph, setShowGraph] = useState(true);
 
-  const [formData, setFormData] = useState({
-    productName: '',
-    usedIn: '',
-    quantity: '',
-    unit: 'BOTTLES'
-  });
-
-  // Save to localStorage whenever inventory changes
+  // Sync report when the inventory page updates shared storage
   useEffect(() => {
-    try {
-      localStorage.setItem(`${STORAGE_KEY}_inventory`, JSON.stringify(inventory))
-    } catch (e) {
-      console.error('Error saving inventory to localStorage:', e)
+    const handleInventoryUpdated = () => {
+      const saved = localStorage.getItem(STORAGE_KEY)
+      if (saved) {
+        try {
+          setInventory(JSON.parse(saved))
+        } catch (e) {
+          console.error('Error parsing inventory update:', e)
+        }
+      }
     }
-  }, [inventory])
 
-  // Get unique usedIn categories for filter
-  const categories = ['All', ...new Set(inventory.map(item => item.usedIn).filter(cat => cat !== ''))];
+    window.addEventListener('inventoryUpdated', handleInventoryUpdated)
+    return () => window.removeEventListener('inventoryUpdated', handleInventoryUpdated)
+  }, [])
+
+  // Get unique categories for filter
+  const categories = ['All', ...new Set(inventory.map(item => item.category || '').filter(cat => cat !== ''))];
 
   // Filter inventory based on search and category
   const filteredInventory = inventory.filter(item => {
     const matchesSearch = searchTerm === '' || 
       item.productName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (item.usedIn && item.usedIn.toLowerCase().includes(searchTerm.toLowerCase()));
+      (item.category && item.category.toLowerCase().includes(searchTerm.toLowerCase()));
     
-    const matchesCategory = selectedCategory === 'All' || item.usedIn === selectedCategory;
+    const matchesCategory = selectedCategory === 'All' || item.category === selectedCategory;
     
     return matchesSearch && matchesCategory;
   });
 
   // Calculate summary statistics
   const totalProducts = inventory.length;
-  const totalUnits = inventory.reduce((sum, item) => sum + item.quantity, 0);
-  const lowStockCount = inventory.filter(item => item.quantity <= 5).length;
+  const totalUnits = inventory.reduce((sum, item) => sum + (item.stockLevel || 0), 0);
+  const lowStockCount = inventory.filter(item => (item.stockLevel || 0) <= 5).length;
   
   // Find max quantity for graph scaling
-  const maxQuantity = Math.max(...inventory.map(item => item.quantity), 1);
-
-  const openCreateModal = () => {
-    setEditingItem(null);
-    setFormData({
-      productName: '',
-      usedIn: '',
-      quantity: '',
-      unit: 'BOTTLES'
-    });
-    setIsModalOpen(true);
-  };
-
-  const openEditModal = (item) => {
-    setEditingItem(item);
-    setFormData({
-      productName: item.productName,
-      usedIn: item.usedIn || '',
-      quantity: item.quantity.toString(),
-      unit: item.unit
-    });
-    setIsModalOpen(true);
-  };
-
-  const closeModal = () => {
-    setIsModalOpen(false);
-    setEditingItem(null);
-  };
-
-  const handleFormSubmit = (e) => {
-    e.preventDefault();
-    
-    if (!formData.productName.trim() || !formData.quantity) {
-      alert('Please fill in product name and quantity.');
-      return;
-    }
-
-    const quantityNum = parseInt(formData.quantity);
-
-    const newItem = {
-      id: editingItem ? editingItem.id : Date.now().toString(),
-      productName: formData.productName,
-      usedIn: formData.usedIn,
-      quantity: quantityNum,
-      unit: formData.unit,
-      lastUpdated: new Date().toISOString().split('T')[0]
-    };
-
-    if (editingItem) {
-      setInventory(prev => prev.map(item => item.id === editingItem.id ? newItem : item));
-    } else {
-      // FIXED: Added to BOTTOM instead of TOP
-      setInventory(prev => [newItem, ...prev]);  // ← Changed from [newItem, ...prev]
-    }
-    
-    closeModal();
-  };
-
-  const handleDelete = (id, productName) => {
-    if (window.confirm(`Are you sure you want to delete ${productName} from inventory?`)) {
-      setInventory(prev => prev.filter(item => item.id !== id));
-    }
-  };
-
-  const handleStockUpdate = (id, currentQuantity, change) => {
-    const newQuantity = currentQuantity + change;
-    if (newQuantity < 0) return;
-    
-    setInventory(prev => prev.map(item => {
-      if (item.id === id) {
-        return {
-          ...item,
-          quantity: newQuantity,
-          lastUpdated: new Date().toISOString().split('T')[0]
-        };
-      }
-      return item;
-    }));
-  };
+  const maxQuantity = Math.max(...inventory.map(item => item.stockLevel || 0), 1);
 
   const getStockStatus = (quantity) => {
     if (quantity <= 0) return 'out-of-stock';
@@ -274,9 +143,6 @@ function InventoryReport() {
             <option key={cat} value={cat}>{cat === 'All' ? 'All Categories' : cat}</option>
           ))}
         </select>
-        <button className="add-btn" onClick={openCreateModal}>
-          + Add Product
-        </button>
       </div>
 
       {/* Summary Stats */}
@@ -304,13 +170,14 @@ function InventoryReport() {
           </div>
           <div className="bar-chart">
             {filteredInventory.map((item) => {
-              const barWidth = (item.quantity / maxQuantity) * 100;
-              const barColor = getBarColor(item.quantity);
+              const quantity = item.stockLevel || 0;
+              const barWidth = (quantity / maxQuantity) * 100;
+              const barColor = getBarColor(quantity);
               return (
                 <div key={item.id} className="bar-item">
                   <div className="bar-label">
                     <span className="bar-product">{item.productName}</span>
-                    <span className="bar-value">{item.quantity} {item.unit}</span>
+                    <span className="bar-value">{quantity} {item.unit || 'UNITS'}</span>
                   </div>
                   <div className="bar-track">
                     <div 
@@ -325,9 +192,9 @@ function InventoryReport() {
                     </div>
                   </div>
                   <div className="bar-meta">
-                    <span className="bar-category">{item.usedIn || 'All Services'}</span>
-                    <span className={`bar-status ${getStockStatus(item.quantity)}`}>
-                      {getStatusText(item.quantity)}
+                    <span className="bar-category">{item.category || 'All Services'}</span>
+                    <span className={`bar-status ${getStockStatus(quantity)}`}>
+                      {getStatusText(quantity)}
                     </span>
                   </div>
                 </div>
@@ -361,137 +228,39 @@ function InventoryReport() {
       {/* Inventory Cards - Styled like the image */}
       {!showGraph && (
         <div className="inventory-cards">
-          {filteredInventory.map((item) => (
-            <div key={item.id} className="inventory-card">
-              <div className="card-header">
-                <h3 className="product-name">{item.productName}</h3>
-                <div className="card-actions">
-                  <button className="card-edit-btn" onClick={() => openEditModal(item)}>✎</button>
-                  <button className="card-delete-btn" onClick={() => handleDelete(item.id, item.productName)}>×</button>
+          {filteredInventory.map((item) => {
+            const quantity = item.stockLevel || 0;
+            return (
+              <div key={item.id} className="inventory-card">
+                <div className="card-header">
+                  <h3 className="product-name">{item.productName}</h3>
                 </div>
-              </div>
-              <div className="used-in">
-                {item.usedIn ? (
-                  <>Used in: <span className="used-in-value">{item.usedIn}</span></>
-                ) : (
-                  <span className="used-in-empty">—</span>
-                )}
-              </div>
-              <div className="quantity-section">
-                <div className="quantity-label">{item.unit}</div>
-                <div className="quantity-value-wrapper">
-                  <button 
-                    className="quantity-btn minus"
-                    onClick={() => handleStockUpdate(item.id, item.quantity, -1)}
-                    disabled={item.quantity <= 0}
-                  >
-                    −
-                  </button>
-                  <span className={`quantity-number ${getStockStatus(item.quantity)}`}>
-                    {item.quantity}
+                <div className="used-in">
+                  {item.category ? (
+                    <>Used in: <span className="used-in-value">{item.category}</span></>
+                  ) : (
+                    <span className="used-in-empty">—</span>
+                  )}
+                </div>
+                <div className="quantity-section">
+                  <div className="quantity-label">{item.unit || 'UNITS'}</div>
+                  <div className="quantity-value-wrapper">
+                    <span className={`quantity-number ${getStockStatus(quantity)}`}>
+                      {quantity}
+                    </span>
+                  </div>
+                </div>
+                <div className="stock-status">
+                  <span className={`stock-badge ${getStockStatus(quantity)}`}>
+                    {getStatusText(quantity)}
                   </span>
-                  <button 
-                    className="quantity-btn plus"
-                    onClick={() => handleStockUpdate(item.id, item.quantity, 1)}
-                  >
-                    +
-                  </button>
                 </div>
               </div>
-              <div className="stock-status">
-                <span className={`stock-badge ${getStockStatus(item.quantity)}`}>
-                  {getStatusText(item.quantity)}
-                </span>
-              </div>
-            </div>
-          ))}
+            )
+          })}
         </div>
       )}
 
-      {/* Add/Edit Modal */}
-      {isModalOpen && (
-        <div className="modal-overlay" onClick={closeModal}>
-          <div className="modal" onClick={(e) => e.stopPropagation()}>
-            <h3>{editingItem ? 'Edit Product' : 'Add New Product'}</h3>
-            <form onSubmit={handleFormSubmit} className="modal-form">
-              <div className="form-group">
-                <label>Product Name *</label>
-                <input 
-                  type="text" 
-                  value={formData.productName} 
-                  onChange={(e) => setFormData({...formData, productName: e.target.value})}
-                  placeholder="e.g., Tire Black Polish"
-                  required
-                />
-              </div>
-
-              <div className="form-group">
-                <label>Used In</label>
-                <input 
-                  type="text" 
-                  value={formData.usedIn} 
-                  onChange={(e) => setFormData({...formData, usedIn: e.target.value})}
-                  placeholder="e.g., Exterior Detailing"
-                />
-                <small>Leave empty if used in multiple services</small>
-              </div>
-
-              <div className="form-row">
-                <div className="form-group">
-                  <label>Quantity *</label>
-                  <input 
-                    type="number" 
-                    value={formData.quantity} 
-                    onChange={(e) => setFormData({...formData, quantity: e.target.value})}
-                    placeholder="0"
-                    required 
-                    min="0"
-                    step="1"
-                  />
-                </div>
-                <div className="form-group">
-                  <label>Unit *</label>
-                  <select 
-                    value={formData.unit} 
-                    onChange={(e) => setFormData({...formData, unit: e.target.value})}
-                  >
-                    <option value="BOTTLES">BOTTLES</option>
-                    <option value="UNITS">UNITS</option>
-                    <option value="GALLONS">GALLONS</option>
-                    <option value="CONTAINERS">CONTAINERS</option>
-                    <option value="PIECES">PIECES</option>
-                    <option value="ROLLS">ROLLS</option>
-                    <option value="SETS">SETS</option>
-                  </select>
-                </div>
-              </div>
-
-              <div className="modal-actions">
-                <button type="submit" className="submit-btn">
-                  {editingItem ? 'Save Changes' : 'Add Product'}
-                </button>
-                <button type="button" className="cancel-btn" onClick={closeModal}>
-                  Cancel
-                </button>
-                {editingItem && (
-                  <button 
-                    type="button" 
-                    className="delete-btn"
-                    onClick={() => {
-                      if (window.confirm(`Delete ${editingItem.productName} from inventory?`)) {
-                        handleDelete(editingItem.id, editingItem.productName);
-                        closeModal();
-                      }
-                    }}
-                  >
-                    Delete
-                  </button>
-                )}
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
     </div>
   );
 }
