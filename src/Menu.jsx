@@ -28,7 +28,10 @@ const getCategoryIcon = (categoryId) => {
 
 const getSubmenuIcon = (submenuId) => {
   const iconMap = {
+    'booking-report': faBook,
+    'financial-report': faChartLine,
     'inventory-report': faWarehouse,
+    'staff-report': faChartSimple,
     'manage-bookings': faBook,
     'manage-services': faHandsHelping
   }

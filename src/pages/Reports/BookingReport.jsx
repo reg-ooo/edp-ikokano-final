@@ -2,82 +2,37 @@
 import { useState, useEffect } from 'react';
 import './BookingReport.css';
 
-const STORAGE_KEY = 'bookingReportData';
-
-// Initial bookings based on the image
-const initialBookings = [
-  {
-    id: '0001',
-    refNumber: '#0001',
-    status: 'COMPLETED',
-    customerName: 'Linda Walker',
-    vehicle: 'Toyota Fortuner (AAG0000)',
-    serviceDetails: 'Premium Wash No Add-ons',
-    assignedStaff: 'Juan Dela Cruz',
-    startTime: '14:00',
-    endTime: '14:45',
-    duration: '45 mins',
-    amount: 200.00,
-    paymentMethod: 'Cash'
-  },
-  {
-    id: '0002',
-    refNumber: '#0002',
-    status: 'IN PROGRESS',
-    customerName: 'Sky Walker',
-    vehicle: 'Starfighter XYZ456',
-    serviceDetails: 'Basic Exterior + Tire Shine',
-    assignedStaff: 'Jose Rizal',
-    startTime: '15:20',
-    endTime: '',
-    duration: '20 mins',
-    amount: 120.00,
-    paymentMethod: 'GCash'
-  },
-  {
-    id: '0003',
-    refNumber: '#0003',
-    status: 'PENDING',
-    customerName: 'John Doe',
-    vehicle: 'Honda Civic (ABC1234)',
-    serviceDetails: 'Deluxe Wash + Wax',
-    assignedStaff: 'Maria Santos',
-    startTime: '16:00',
-    endTime: '',
-    duration: '60 mins',
-    amount: 350.00,
-    paymentMethod: 'Credit Card'
-  },
-  {
-    id: '0004',
-    refNumber: '#0004',
-    status: 'WAITING',
-    customerName: 'Jane Smith',
-    vehicle: 'Mitsubishi Montero (XYZ9876)',
-    serviceDetails: 'Basic Wash',
-    assignedStaff: 'Pending',
-    startTime: '',
-    endTime: '',
-    duration: '30 mins',
-    amount: 100.00,
-    paymentMethod: 'Cash'
-  }
-];
+const STORAGE_KEY = 'manageBookingsData';
 
 const serviceOptions = ['All Services', 'Premium Wash', 'Basic Exterior', 'Deluxe Wash', 'Basic Wash'];
 
 function BookingReport() {
   const [bookings, setBookings] = useState(() => {
-    const saved = localStorage.getItem(`${STORAGE_KEY}_bookings`)
+    const saved = localStorage.getItem(STORAGE_KEY)
     if (saved) {
       try {
-        return JSON.parse(saved)
+        const data = JSON.parse(saved)
+        // Map ManageBookings data to BookingReport format
+        return data.map(b => ({
+          id: b.id,
+          refNumber: b.id,
+          status: b.status ? b.status.toUpperCase() === 'IN-PROGRESS' ? 'IN PROGRESS' : b.status.toUpperCase() : 'PENDING',
+          customerName: b.name || '',
+          vehicle: b.vehicleModel ? `${b.vehicleBrand} ${b.vehicleModel}` : b.details || '',
+          serviceDetails: b.serviceAvails || b.service || '',
+          assignedStaff: 'Unassigned',
+          startTime: '',
+          endTime: '',
+          duration: '30 mins',
+          amount: 0,
+          paymentMethod: 'Cash'
+        }))
       } catch (e) {
         console.error('Error parsing saved bookings:', e)
-        return initialBookings
+        return []
       }
     }
-    return initialBookings
+    return []
   })
   
   const [searchTerm, setSearchTerm] = useState('');
@@ -99,14 +54,69 @@ function BookingReport() {
     paymentMethod: 'Cash'
   });
 
-  // Save to localStorage whenever bookings change
+  // Refresh bookings when ManageBookings data changes (via storage event listener)
   useEffect(() => {
-    try {
-      localStorage.setItem(`${STORAGE_KEY}_bookings`, JSON.stringify(bookings))
-    } catch (e) {
-      console.error('Error saving bookings to localStorage:', e)
+    const handleStorageChange = () => {
+      const saved = localStorage.getItem(STORAGE_KEY)
+      if (saved) {
+        try {
+          const data = JSON.parse(saved)
+          const mapped = data.map(b => ({
+            id: b.id,
+            refNumber: b.id,
+            status: b.status ? b.status.toUpperCase() === 'IN-PROGRESS' ? 'IN PROGRESS' : b.status.toUpperCase() : 'PENDING',
+            customerName: b.name || '',
+            vehicle: b.vehicleModel ? `${b.vehicleBrand} ${b.vehicleModel}` : b.details || '',
+            serviceDetails: b.serviceAvails || b.service || '',
+            assignedStaff: 'Unassigned',
+            startTime: '',
+            endTime: '',
+            duration: '30 mins',
+            amount: 0,
+            paymentMethod: 'Cash'
+          }))
+          setBookings(mapped)
+        } catch (e) {
+          console.error('Error parsing saved bookings:', e)
+        }
+      }
     }
-  }, [bookings])
+
+    // Listen for storage changes from other tabs/windows
+    window.addEventListener('storage', handleStorageChange)
+    return () => window.removeEventListener('storage', handleStorageChange)
+  }, [])
+
+  // Sync with ManageBookings data periodically
+  useEffect(() => {
+    const interval = setInterval(() => {
+      const saved = localStorage.getItem(STORAGE_KEY)
+      if (saved) {
+        try {
+          const data = JSON.parse(saved)
+          const mapped = data.map(b => ({
+            id: b.id,
+            refNumber: b.id,
+            status: b.status ? b.status.toUpperCase() === 'IN-PROGRESS' ? 'IN PROGRESS' : b.status.toUpperCase() : 'PENDING',
+            customerName: b.name || '',
+            vehicle: b.vehicleModel ? `${b.vehicleBrand} ${b.vehicleModel}` : b.details || '',
+            serviceDetails: b.serviceAvails || b.service || '',
+            assignedStaff: 'Unassigned',
+            startTime: '',
+            endTime: '',
+            duration: '30 mins',
+            amount: 0,
+            paymentMethod: 'Cash'
+          }))
+          setBookings(mapped)
+        } catch (e) {
+          console.error('Error syncing bookings:', e)
+        }
+      }
+    }, 1000)
+
+    return () => clearInterval(interval)
+  }, [])
 
   // Calculate summary metrics
   const todayBookings = bookings.length;
@@ -269,9 +279,7 @@ function BookingReport() {
             <option key={option} value={option}>{option}</option>
           ))}
         </select>
-        <button className="primary-btn" onClick={openCreateModal}>
-          + New Booking
-        </button>
+        {/* Note: Create booking via Manage Bookings */}
       </div>
 
       {/* Bookings Table */}
@@ -285,7 +293,6 @@ function BookingReport() {
               <th>ASSIGNED STAFF</th>
               <th>DURATION</th>
               <th>FINANCIALS</th>
-              <th>ACTION</th>
             </tr>
           </thead>
           <tbody>
@@ -312,14 +319,13 @@ function BookingReport() {
                   <span className="payment-method">{booking.paymentMethod}</span>
                 </td>
                 <td className="action-cell">
-                  <button className="action-btn edit" onClick={() => openEditModal(booking)}>Edit</button>
-                  <button className="action-btn delete" onClick={() => handleDelete(booking.id, booking.customerName)}>Delete</button>
+                  {/* Use Manage Bookings to edit */}
                 </td>
               </tr>
             ))}
             {filteredBookings.length === 0 && (
               <tr>
-                <td colSpan="7" className="empty-state">
+                <td colSpan="6" className="empty-state">
                   <div className="empty-message">No bookings found</div>
                 </td>
               </tr>
