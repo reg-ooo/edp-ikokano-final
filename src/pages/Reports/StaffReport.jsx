@@ -118,16 +118,98 @@ const initialStaff = [
 ]
 
 function StaffReport() {
-  const [staff, setStaff] = useState(initialStaff)
+  const [staff, setStaff] = useState(() => {
+    const saved = localStorage.getItem(STORAGE_KEY)
+    return saved ? JSON.parse(saved) : initialStaff
+  })
   const [search, setSearch] = useState('')
-  const [selectedStaff, setSelectedStaff] = useState(initialStaff[0])
+  const [selectedStaff, setSelectedStaff] = useState(null)
   const [activeTab, setActiveTab] = useState('profile')
   const [isDirectoryOpen, setIsDirectoryOpen] = useState(false) // Hidden by default
 
+  // Add state for edit modal
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false)
+  const [editFormData, setEditFormData] = useState(null)
+
+  // Sync with Payroll Data
   useEffect(() => {
-    const saved = localStorage.getItem(STORAGE_KEY)
-    if (saved) setStaff(JSON.parse(saved))
+    const syncWithPayroll = () => {
+      const savedPayroll = localStorage.getItem('payrollData_employees')
+      if (savedPayroll) {
+        try {
+          const payrollStaff = JSON.parse(savedPayroll)
+          setStaff(prevStaff => {
+            const updatedStaff = prevStaff.map(member => {
+              // Try to find matching employee in payroll data by name
+              const payrollRecord = payrollStaff.find(
+                p => p.name.toLowerCase() === member.name.toLowerCase()
+              )
+              
+              if (payrollRecord) {
+                return {
+                  ...member,
+                  payroll: {
+                    basic: payrollRecord.basePay || 0,
+                    overtime: payrollRecord.commission || 0, // Mapping commission to overtime for UI
+                    deductions: payrollRecord.deductions || 0,
+                    net: payrollRecord.netPay || 0
+                  }
+                }
+              }
+              return member
+            })
+            
+            // Optionally, add new staff from payroll that aren't in StaffReport
+            payrollStaff.forEach(p => {
+              const exists = updatedStaff.some(s => s.name.toLowerCase() === p.name.toLowerCase())
+              if (!exists) {
+                updatedStaff.push({
+                  id: `payroll-auto-${p.id}`,
+                  name: p.name,
+                  position: p.role,
+                  role: p.role.toLowerCase().replace(/\s+/g, '-'),
+                  email: 'Pending from payroll',
+                  phone: 'Pending from payroll',
+                  hireDate: new Date().toISOString().split('T')[0],
+                  salary: p.basePay || p.commission || 0,
+                  status: 'active',
+                  attendance: { present: 0, absent: 0, late: 0 },
+                  payroll: {
+                    basic: p.basePay || 0,
+                    overtime: p.commission || 0,
+                    deductions: p.deductions || 0,
+                    net: p.netPay || 0
+                  }
+                })
+              }
+            })
+            
+            return updatedStaff
+          })
+        } catch (e) {
+          console.error("Error syncing with payroll data", e)
+        }
+      }
+    }
+    
+    // Initial sync
+    syncWithPayroll()
+
+    // Listen for payroll updates
+    window.addEventListener('payrollUpdated', syncWithPayroll)
+    return () => window.removeEventListener('payrollUpdated', syncWithPayroll)
   }, [])
+
+  // Set selected staff after initialization if null
+  useEffect(() => {
+    if (!selectedStaff && staff.length > 0) {
+      setSelectedStaff(staff[0])
+    } else if (selectedStaff) {
+      // Keep selected staff updated if their data changed
+      const updated = staff.find(s => s.id === selectedStaff.id)
+      if (updated) setSelectedStaff(updated)
+    }
+  }, [staff, selectedStaff])
 
   useEffect(() => {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(staff))
@@ -155,7 +237,27 @@ function StaffReport() {
   }
 
   const handleEditProfile = () => {
-    alert('Edit Profile feature coming soon!')
+    if (selectedStaff) {
+      setEditFormData({
+        email: selectedStaff.email,
+        phone: selectedStaff.phone,
+        position: selectedStaff.position,
+        status: selectedStaff.status
+      })
+      setIsEditModalOpen(true)
+    }
+  }
+
+  const handleEditSubmit = (e) => {
+    e.preventDefault()
+    setStaff(prev => 
+      prev.map(member => 
+        member.id === selectedStaff.id 
+          ? { ...member, ...editFormData }
+          : member
+      )
+    )
+    setIsEditModalOpen(false)
   }
 
   return (
@@ -360,6 +462,61 @@ function StaffReport() {
           )}
         </div>
       </div>
+
+      {isEditModalOpen && editFormData && (
+        <div className="modal-overlay" onClick={() => setIsEditModalOpen(false)}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h2>Edit Profile - {selectedStaff?.name}</h2>
+              <button className="close-btn" onClick={() => setIsEditModalOpen(false)}>×</button>
+            </div>
+            <form onSubmit={handleEditSubmit} className="edit-staff-form">
+              <div className="form-group">
+                <label>Position</label>
+                <input 
+                  type="text" 
+                  value={editFormData.position} 
+                  onChange={(e) => setEditFormData({...editFormData, position: e.target.value})} 
+                  required 
+                />
+              </div>
+              <div className="form-group">
+                <label>Email</label>
+                <input 
+                  type="email" 
+                  value={editFormData.email} 
+                  onChange={(e) => setEditFormData({...editFormData, email: e.target.value})} 
+                  required 
+                />
+              </div>
+              <div className="form-group">
+                <label>Phone</label>
+                <input 
+                  type="text" 
+                  value={editFormData.phone} 
+                  onChange={(e) => setEditFormData({...editFormData, phone: e.target.value})} 
+                  required 
+                />
+              </div>
+              <div className="form-group">
+                <label>Status</label>
+                <select 
+                  value={editFormData.status} 
+                  onChange={(e) => setEditFormData({...editFormData, status: e.target.value})}
+                >
+                  <option value="active">Active</option>
+                  <option value="inactive">Inactive</option>
+                  <option value="on-leave">On Leave</option>
+                </select>
+              </div>
+              <div className="form-actions">
+                <button type="button" className="cancel-btn" onClick={() => setIsEditModalOpen(false)}>Cancel</button>
+                <button type="submit" className="save-btn">Save Changes</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

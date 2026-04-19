@@ -277,9 +277,9 @@
 }
 
 .delete-btn {
-  background: none;
+  background: #ef4444;
   border: none;
-  color: #ef4444;
+  color: white;
   font-weight: 600;
   font-size: 0.75rem;
   cursor: pointer;
@@ -289,8 +289,8 @@
 }
 
 .delete-btn:hover {
-  background: #fef2f2;
-  color: #dc2626;
+  background: #dc2626;
+  color: white;
 }
 
 /* Empty State */
