@@ -63,7 +63,7 @@ function FinancialReport() {
     }
     return initialExpenses
   })
-  
+
   const [revenue, setRevenue] = useState(() => {
     const saved = localStorage.getItem(`${STORAGE_KEY}_revenue`)
     if (saved) {
@@ -76,27 +76,18 @@ function FinancialReport() {
     }
     return initialRevenue
   })
-  
+
   const [search, setSearch] = useState('')
   const [amountSearch, setAmountSearch] = useState('')
   const [filterCategory, setFilterCategory] = useState('All')
-  const [isModalOpen, setIsModalOpen] = useState(false)
-  const [editExpenseId, setEditExpenseId] = useState(null)
-  const [viewExpense, setViewExpense] = useState(null);
+  const [viewExpense, setViewExpense] = useState(null)
 
-  const [formData, setFormData] = useState({
-    date: '',
-    productName: '',
-    category: '',
-    amount: ''
-  })
-
-  // Save to localStorage whenever expenses or revenue change
+  // keep localStorage saving (unchanged behavior)
   useEffect(() => {
     try {
       localStorage.setItem(`${STORAGE_KEY}_expenses`, JSON.stringify(expenses))
     } catch (e) {
-      console.error('Error saving expenses to localStorage:', e)
+      console.error('Error saving expenses:', e)
     }
   }, [expenses])
 
@@ -104,102 +95,24 @@ function FinancialReport() {
     try {
       localStorage.setItem(`${STORAGE_KEY}_revenue`, JSON.stringify(revenue))
     } catch (e) {
-      console.error('Error saving revenue to localStorage:', e)
+      console.error('Error saving revenue:', e)
     }
   }, [revenue])
 
-  // Scroll-lock: disable body scroll when panel is open
+  // scroll lock (updated)
   useEffect(() => {
-    const isOpen = isModalOpen || !!viewExpense;
-    document.body.style.overflow = isOpen ? 'hidden' : '';
-    return () => { document.body.style.overflow = ''; };
-  }, [isModalOpen, viewExpense]);
+    const isOpen = !!viewExpense
+    document.body.style.overflow = isOpen ? 'hidden' : ''
+    return () => { document.body.style.overflow = '' }
+  }, [viewExpense])
 
-  // Calculate totals
+  // totals
   const totalRevenue = revenue.reduce((sum, item) => sum + item.amount, 0)
   const totalExpenses = expenses.reduce((sum, item) => sum + item.amount, 0)
   const netProfit = totalRevenue - totalExpenses
 
-  const openCreateForm = () => {
-    setEditExpenseId(null)
-    setFormData({
-      date: new Date().toISOString().split('T')[0],
-      productName: '',
-      category: '',
-      amount: ''
-    })
-    setIsModalOpen(true)
-  }
-
-  const openEditForm = (expense) => {
-    setEditExpenseId(expense.id)
-    setFormData({
-      date: expense.date,
-      productName: expense.productName,
-      category: expense.category,
-      amount: expense.amount
-    })
-    setIsModalOpen(true)
-  }
-
-  const openViewPanel = (expense) => {
-    setViewExpense(expense);
-  };
-
-  const closeViewPanel = () => {
-    setViewExpense(null);
-  };
-
-  const closeModal = () => {
-    setIsModalOpen(false)
-    setEditExpenseId(null)
-  }
-
-  const handleFormSubmit = (e) => {
-    e.preventDefault()
-
-    if (!formData.productName.trim() || !formData.category.trim() || !formData.amount || !formData.date) {
-      alert('Please complete all fields.')
-      return
-    }
-
-    const amountNum = parseFloat(formData.amount)
-
-    if (editExpenseId) {
-      setExpenses((prev) =>
-        prev.map((item) =>
-          item.id === editExpenseId
-            ? { 
-                ...item, 
-                date: formData.date,
-                productName: formData.productName,
-                category: formData.category,
-                amount: amountNum
-              }
-            : item
-        )
-      )
-      setEditExpenseId(null)
-    } else {
-      const newExpense = {
-        id: Date.now().toString(),
-        date: formData.date,
-        productName: formData.productName,
-        category: formData.category,
-        amount: amountNum,
-        type: 'expense'
-      }
-      setExpenses((prev) => [...prev, newExpense])
-    }
-
-    setIsModalOpen(false)
-  }
-
-  const handleDelete = (id, productName) => {
-    if (window.confirm(`Are you sure you want to delete ${productName}?`)) {
-      setExpenses((prev) => prev.filter((item) => item.id !== id))
-    }
-  }
+  const openViewPanel = (expense) => setViewExpense(expense)
+  const closeViewPanel = () => setViewExpense(null)
 
   const filteredExpenses = expenses
     .filter((expense) => {
@@ -215,30 +128,34 @@ function FinancialReport() {
     })
     .filter((expense) => {
       if (!amountSearch) return true
-      const amountStr = expense.amount.toString()
-      return amountStr.includes(amountSearch)
+      return expense.amount.toString().includes(amountSearch)
     })
 
   const uniqueCategories = ['All', ...new Set(expenses.map(e => e.category))]
 
   return (
     <div className="financial-wrap">
-     {/* Summary Cards */}
+
+      {/* Summary Cards */}
       <div className="summary-cards">
         <div className="summary-card revenue-card">
           <h4>Total Service Revenue</h4>
           <p className="summary-amount">₱{totalRevenue.toLocaleString()}</p>
         </div>
+
         <div className="summary-card expense-card">
           <h4>Total Operational Costs</h4>
           <p className="summary-amount negative">
             {totalExpenses > 0 ? `-₱${totalExpenses.toLocaleString()}` : `₱${totalExpenses.toLocaleString()}`}
           </p>
         </div>
+
         <div className="summary-card profit-card">
           <h4>Net Profit</h4>
           <p className={`summary-amount ${netProfit >= 0 ? 'positive' : 'negative'}`}>
-            {netProfit >= 0 ? `₱${netProfit.toLocaleString()}` : `-₱${Math.abs(netProfit).toLocaleString()}`}
+            {netProfit >= 0
+              ? `₱${netProfit.toLocaleString()}`
+              : `-₱${Math.abs(netProfit).toLocaleString()}`}
           </p>
         </div>
       </div>
@@ -247,6 +164,7 @@ function FinancialReport() {
       <div className="expenses-section">
         <div className="expenses-header">
           <h3>Record New Expense</h3>
+
           <div className="expenses-controls">
             <input
               className="expenses-search"
@@ -254,6 +172,7 @@ function FinancialReport() {
               value={search}
               onChange={(e) => setSearch(e.target.value)}
             />
+
             <input
               className="expenses-amount-search"
               placeholder="Search by amount..."
@@ -262,6 +181,7 @@ function FinancialReport() {
               type="number"
               step="0.01"
             />
+
             <select
               className="expenses-filter"
               value={filterCategory}
@@ -271,7 +191,6 @@ function FinancialReport() {
                 <option key={cat} value={cat}>{cat}</option>
               ))}
             </select>
-            <button className="primary-btn" onClick={openCreateForm}>Add Expense</button>
           </div>
         </div>
 
@@ -285,6 +204,7 @@ function FinancialReport() {
               <th>Actions</th>
             </tr>
           </thead>
+
           <tbody>
             {filteredExpenses.map((expense) => (
               <tr key={expense.id}>
@@ -298,11 +218,10 @@ function FinancialReport() {
                 <td className="amount-cell">₱{expense.amount.toLocaleString()}</td>
                 <td className="expense-actions">
                   <button className="view-btn" onClick={() => openViewPanel(expense)}>View</button>
-                  <button className="link-btn" onClick={() => openEditForm(expense)}>Edit</button>
-                  <button className="link-btn delete" onClick={() => handleDelete(expense.id, expense.productName)}>Delete</button>
                 </td>
               </tr>
             ))}
+
             {filteredExpenses.length === 0 && (
               <tr>
                 <td colSpan="5" style={{ textAlign: 'center', padding: '2rem' }}>
@@ -314,6 +233,7 @@ function FinancialReport() {
         </table>
       </div>
 
+      {/* View Modal */}
       {viewExpense && createPortal(
         <div className="modal-overlay" onClick={closeViewPanel}>
           <div className="modal detail-modal" onClick={(e) => e.stopPropagation()}>
@@ -321,9 +241,10 @@ function FinancialReport() {
               <h3>Expense Details</h3>
               <button className="detail-close-btn" onClick={closeViewPanel}>✕</button>
             </div>
+
             <div className="detail-name">{viewExpense.productName}</div>
             <div className="detail-role">{viewExpense.category}</div>
-            
+
             <div className="detail-grid">
               <div className="detail-item">
                 <span className="detail-label">Date</span>
@@ -336,9 +257,6 @@ function FinancialReport() {
             </div>
 
             <div className="detail-actions">
-              <button className="submit-btn" onClick={() => { closeViewPanel(); openEditForm(viewExpense); }}>
-                Edit Expense
-              </button>
               <button className="cancel-btn" onClick={closeViewPanel}>
                 Close
               </button>
@@ -348,86 +266,6 @@ function FinancialReport() {
         document.body
       )}
 
-      {/* Add/Edit Modal */}
-      {isModalOpen && createPortal(
-        <div className="modal-overlay" onClick={closeModal}>
-          <div className="modal" onClick={(e) => e.stopPropagation()}>
-            <h3>{editExpenseId ? 'Edit Expense' : 'Add New Expense'}</h3>
-            <form onSubmit={handleFormSubmit} className="modal-form">
-              <div className="modal-row">
-                <label>Date</label>
-                <input 
-                  type="date" 
-                  value={formData.date} 
-                  onChange={(e) => setFormData({ ...formData, date: e.target.value })}
-                  required 
-                />
-              </div>
-              <div className="modal-row">
-                <label>Product/Service Name</label>
-                <input 
-                  value={formData.productName} 
-                  onChange={(e) => setFormData({ ...formData, productName: e.target.value })} 
-                  placeholder="e.g., Staff Salary, Water Bill"
-                  required 
-                />
-              </div>
-              <div className="modal-row">
-                <label>Category</label>
-                <select 
-                  value={formData.category} 
-                  onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-                  required
-                >
-                  <option value="">Select Category</option>
-                  <option value="Salary">Salary</option>
-                  <option value="Utility">Utility</option>
-                  <option value="Maintenance">Maintenance</option>
-                  <option value="Supplies">Supplies</option>
-                  <option value="Rent">Rent</option>
-                  <option value="Other">Other</option>
-                </select>
-              </div>
-              <div className="modal-row">
-                <label>Amount (₱)</label>
-                <div className="amount-input-wrapper">
-                  <span className="amount-currency">₱</span>
-                  <input 
-                    type="number" 
-                    value={formData.amount} 
-                    onChange={(e) => setFormData({ ...formData, amount: e.target.value })}
-                    placeholder="0.00"
-                    required 
-                    step="0.01"
-                    min="0"
-                    className="amount-input-field"
-                  />
-                </div>
-              </div>
-              <div className="buttons-row">
-                <button type="submit" className="primary-btn">{editExpenseId ? 'Save Changes' : 'Add Expense'}</button>
-                <button type="button" onClick={closeModal}>Cancel</button>
-                {editExpenseId && (
-                  <button 
-                    type="button" 
-                    className="delete-btn"
-                    onClick={() => {
-                      const expense = expenses.find(e => e.id === editExpenseId)
-                      if (window.confirm(`Delete ${expense?.productName}?`)) {
-                        handleDelete(editExpenseId, expense?.productName)
-                        closeModal()
-                      }
-                    }}
-                  >
-                    Delete Expense
-                  </button>
-                )}
-              </div>
-            </form>
-          </div>
-        </div>,
-        document.body
-      )}
     </div>
   )
 }

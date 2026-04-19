@@ -4,7 +4,7 @@ import './ManageServices.css'
 
 const STORAGE_KEY = 'manageServicesList'
 
-/*const initialServices = [
+const initialServices = [
   { 
     id: '1', 
     serviceName: 'PFF Tinting', 
@@ -18,7 +18,7 @@ const STORAGE_KEY = 'manageServicesList'
     servicePrice: '1000', 
     duration: '1 hour' 
   }
-]*/
+]
 
 const parseDuration = (duration = '') => {
   const hoursMatch = duration.match(/(\d+)\s*hour/)
