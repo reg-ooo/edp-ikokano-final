@@ -1,5 +1,6 @@
 // StaffReport.jsx
 import { useState, useEffect } from 'react'
+import { createPortal } from 'react-dom'
 import './StaffReport.css'
 
 const STORAGE_KEY = 'staffReportData'
@@ -130,6 +131,12 @@ function StaffReport() {
   // Add state for edit modal
   const [isEditModalOpen, setIsEditModalOpen] = useState(false)
   const [editFormData, setEditFormData] = useState(null)
+
+  // Scroll-lock: disable body scroll when panel is open
+  useEffect(() => {
+    document.body.style.overflow = isEditModalOpen ? 'hidden' : '';
+    return () => { document.body.style.overflow = ''; };
+  }, [isEditModalOpen]);
 
   // Sync with Payroll Data
   useEffect(() => {
@@ -463,7 +470,7 @@ function StaffReport() {
         </div>
       </div>
 
-      {isEditModalOpen && editFormData && (
+      {isEditModalOpen && editFormData && createPortal(
         <div className="modal-overlay" onClick={() => setIsEditModalOpen(false)}>
           <div className="modal-content" onClick={(e) => e.stopPropagation()}>
             <div className="modal-header">
@@ -515,7 +522,8 @@ function StaffReport() {
               </div>
             </form>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </div>
   )

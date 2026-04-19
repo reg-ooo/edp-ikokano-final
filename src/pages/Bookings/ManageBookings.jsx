@@ -1,5 +1,6 @@
 // ManageBookings.jsx
 import { useState, useEffect } from 'react'
+import { createPortal } from 'react-dom'
 import './ManageBookings.css'
 
 const STORAGE_KEY = 'manageBookingsData'
@@ -107,6 +108,12 @@ function ManageBookings() {
       console.error('Error saving bookings to localStorage:', e)
     }
   }, [bookings])
+
+  // Scroll-lock: disable body scroll when modal is open
+  useEffect(() => {
+    document.body.style.overflow = isModalOpen || isDeleteModalOpen ? 'hidden' : '';
+    return () => { document.body.style.overflow = ''; };
+  }, [isModalOpen, isDeleteModalOpen]);
 
   const openCreateForm = () => {
     setEditBookingId(null)
@@ -385,7 +392,7 @@ function ManageBookings() {
         </tbody>
       </table>
 
-      {isModalOpen && (
+      {isModalOpen && createPortal(
         <div className="modal-overlay" onClick={closeModal}>
           <div className="modal" onClick={(e) => e.stopPropagation()}>
             <h3>{editBookingId ? 'Customer Booking Details' : 'Create Booking'}</h3>
@@ -466,10 +473,11 @@ function ManageBookings() {
               </div>
             </form>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
 
-      {isDeleteModalOpen && deleteBooking && (
+      {isDeleteModalOpen && deleteBooking && createPortal(
         <div className="modal-overlay" onClick={() => setIsDeleteModalOpen(false)}>
           <div className="modal" onClick={(e) => e.stopPropagation()}>
             <h3>Confirm Deletion</h3>
@@ -486,7 +494,8 @@ function ManageBookings() {
               }}>Cancel</button>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </div>
   )
