@@ -7,8 +7,6 @@ import './Payroll.css';
 
 const STORAGE_KEY = 'payrollData';
 
-//
-
 function Payroll() {
   const [employees, setEmployees] = useState(() => {
     const saved = localStorage.getItem(`${STORAGE_KEY}_employees`)
@@ -25,13 +23,11 @@ function Payroll() {
   
   const [searchTerm, setSearchTerm] = useState('');
   const [typeFilter, setTypeFilter] = useState('All');
-  // FIX #2 — Sort state
   const [sortField, setSortField] = useState('name');
   const [sortOrder, setSortOrder] = useState('asc');
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingEmployee, setEditingEmployee] = useState(null);
-  // FIX #1 — View detail panel state
   const [viewEmployee, setViewEmployee] = useState(null);
 
   const [formData, setFormData] = useState({
@@ -43,10 +39,40 @@ function Payroll() {
     deductions: ''
   });
 
+  // Helper function to persist and dispatch activity logs
+  const dispatchActivityLog = (action, userName = 'System') => {
+    const timestamp = new Date().toLocaleString('en-PH', {
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: true
+    });
+
+    const newLog = {
+      id: Date.now().toString(),
+      user: userName,
+      action,
+      timestamp
+    };
+
+    try {
+      const savedLogs = localStorage.getItem('activityLogs');
+      const currentLogs = savedLogs ? JSON.parse(savedLogs) : [];
+      localStorage.setItem('activityLogs', JSON.stringify([newLog, ...currentLogs]));
+    } catch (e) {
+      console.error('Error saving activity log entry:', e);
+    }
+
+    window.dispatchEvent(new CustomEvent('activityLogEntry', {
+      detail: newLog
+    }));
+  };
+
   // Save to localStorage whenever employees change + notify Dashboard
   useEffect(() => {
     try {
-      // Small logic to avoid updating timestamp purely on first page component mount
       const savedStr = localStorage.getItem(`${STORAGE_KEY}_employees`);
       const savedArr = savedStr ? JSON.parse(savedStr) : [];
       const changed = JSON.stringify(savedArr) !== JSON.stringify(employees);
@@ -56,7 +82,6 @@ function Payroll() {
         updateTimestamp('payroll');
       }
       
-      // FIX #5 — Dispatch event so Dashboard can pick up payroll stats
       window.dispatchEvent(new CustomEvent('payrollUpdated'))
     } catch (e) {
       console.error('Error saving employees to localStorage:', e)
@@ -67,14 +92,14 @@ function Payroll() {
   const totalBasePay = employees.reduce((sum, emp) => sum + (emp.basePay || 0), 0);
   const totalCommissions = employees.reduce((sum, emp) => sum + (emp.commission || 0), 0);
 
-  // Scroll-lock: disable body scroll when any modal/panel is open
+  // Scroll-lock
   useEffect(() => {
     const isOpen = isModalOpen || !!viewEmployee;
     document.body.style.overflow = isOpen ? 'hidden' : '';
     return () => { document.body.style.overflow = ''; };
   }, [isModalOpen, viewEmployee]);
 
-  // FIX #2 — Filter + sort employees
+  // Filter + sort employees
   const filteredEmployees = employees
     .filter(emp => {
       const matchesSearch = searchTerm === '' || 
@@ -95,7 +120,6 @@ function Payroll() {
       return sortOrder === 'asc' ? cmp : -cmp;
     });
 
-  // Calculate net pay for an employee
   const calculateNetPay = (type, basePay, commission, deductions) => {
     let total = 0;
     if (type === 'INTERNAL') {
@@ -106,7 +130,18 @@ function Payroll() {
     return Math.max(0, total);
   };
 
-  // FIX #4 — Compute live net pay preview from form fields
+  const getFormattedTimestamp = () => {
+    const date = new Date();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    const year = date.getFullYear();
+    let hours = date.getHours();
+    const minutes = String(date.getMinutes()).padStart(2, '0');
+    const ampm = hours >= 12 ? 'PM' : 'AM';
+    hours = hours % 12 || 12;
+    return `${year}-${month}-${day} ${hours}:${minutes} ${ampm}`;
+  };
+
   const liveNetPay = calculateNetPay(
     formData.type,
     parseFloat(formData.basePay) || 0,
@@ -145,7 +180,6 @@ function Payroll() {
     setEditingEmployee(null);
   };
 
-  // FIX #1 — Open / close detail view
   const openViewPanel = (employee) => {
     setViewEmployee(employee);
   };
@@ -189,20 +223,26 @@ function Payroll() {
     };
 
     if (editingEmployee) {
+      // EDIT: Log the edit activity
       setEmployees(prev => prev.map(emp => emp.id === editingEmployee.id ? newEmployee : emp));
-      // If the detail view was open for this employee, refresh it
+      dispatchActivityLog(`Edited payroll employee: ${formData.name} (${formData.role})`);
+      
       if (viewEmployee && viewEmployee.id === editingEmployee.id) {
         setViewEmployee(newEmployee);
       }
     } else {
+      // ADD: Log the new employee activity
       setEmployees(prev => [...prev, newEmployee]);
+      dispatchActivityLog(`Added new payroll employee: ${formData.name} (${formData.role}) - ${type === 'INTERNAL' ? `Base Pay: ₱${basePay.toLocaleString()}` : `Commission: ₱${commission.toLocaleString()}`}`);
     }
     
     closeModal();
   };
 
-  const handleDelete = (id, name) => {
+  const handleDelete = (id, name, role) => {
     if (window.confirm(`Are you sure you want to delete ${name} from payroll?`)) {
+      // DELETE: Log the deletion activity
+      dispatchActivityLog(`Deleted payroll employee: ${name} (${role})`);
       setEmployees(prev => prev.filter(emp => emp.id !== id));
       if (viewEmployee && viewEmployee.id === id) closeViewPanel();
       if (editingEmployee && editingEmployee.id === id) closeModal();
@@ -217,7 +257,6 @@ function Payroll() {
   return (
     <div className="payroll-wrap">
       <h1>Payroll</h1>
-      {/* Header with timestamp */}
       <div className="payroll-header">
         <div className="timestamp">
           <LastUpdated storageKey="payroll" />
@@ -255,7 +294,6 @@ function Payroll() {
             onChange={(e) => setSearchTerm(e.target.value)}
           />
         </div>
-        {/* Filter */}
         <select 
           className="type-filter"
           value={typeFilter}
@@ -265,7 +303,6 @@ function Payroll() {
           <option value="INTERNAL">Internal</option>
           <option value="OUTSOURCE">Outsource</option>
         </select>
-        {/* FIX #2 — Sort controls */}
         <select
           className="type-filter"
           value={sortField}
@@ -288,7 +325,7 @@ function Payroll() {
         </button>
       </div>
 
-      {/* Payroll Table — FIX #3: Added Net Pay column */}
+      {/* Payroll Table */}
       <div className="payroll-table-container">
         <table className="payroll-table">
           <thead>
@@ -323,20 +360,18 @@ function Payroll() {
                 <td className="amount-cell deduction">
                   {employee.deductions ? `-${formatCurrency(employee.deductions)}` : '---'}
                 </td>
-                {/* FIX #3 — Net Pay column */}
                 <td className="amount-cell net-pay-cell">
                   {formatCurrency(employee.netPay)}
                 </td>
                 <td>
                   <div className="action-buttons">
-                    {/* FIX #1 — View button */}
                     <button className="view-btn" onClick={() => openViewPanel(employee)}>
                       View
                     </button>
                     <button className="edit-btn" onClick={() => openEditModal(employee)}>
                       Edit
                     </button>
-                    <button className="delete-btn" onClick={() => handleDelete(employee.id, employee.name)}>
+                    <button className="delete-btn" onClick={() => handleDelete(employee.id, employee.name, employee.role)}>
                       Delete
                     </button>
                   </div>
@@ -356,7 +391,7 @@ function Payroll() {
         </table>
       </div>
 
-      {/* Detail View Panel — rendered via portal to escape panel clipping */}
+      {/* Detail View Panel */}
       {viewEmployee && createPortal(
         <div className="modal-overlay" onClick={closeViewPanel}>
           <div className="modal detail-modal" onClick={(e) => e.stopPropagation()}>
@@ -413,7 +448,7 @@ function Payroll() {
         document.body
       )}
 
-      {/* Add/Edit Modal — rendered via portal to escape panel clipping */}
+      {/* Add/Edit Modal */}
       {isModalOpen && createPortal(
         <div className="modal-overlay" onClick={closeModal}>
           <div className="modal" onClick={(e) => e.stopPropagation()}>
@@ -527,7 +562,7 @@ function Payroll() {
                   <button
                     type="button"
                     className="delete-modal-btn"
-                    onClick={() => handleDelete(editingEmployee.id, editingEmployee.name)}
+                    onClick={() => handleDelete(editingEmployee.id, editingEmployee.name, editingEmployee.role)}
                   >
                     Delete
                   </button>
@@ -543,70 +578,3 @@ function Payroll() {
 }
 
 export default Payroll;
-
-// Initial payroll data based on the image
-// Commented out for now as it is only used for testing purposes
-/*
-const initialEmployees = [
-  {
-    id: '1',
-    name: 'Alejandro',
-    role: 'Lead Detailer',
-    type: 'INTERNAL',
-    basePay: 8500.00,
-    commission: null,
-    deductions: 500.00,
-    netPay: 8000.00
-  },
-  {
-    id: '2',
-    name: 'Linda',
-    role: 'Window Tint Specialist',
-    type: 'OUTSOURCE',
-    basePay: null,
-    commission: 2100.00,
-    deductions: null,
-    netPay: 2100.00
-  },
-  {
-    id: '3',
-    name: 'Samantha',
-    role: 'Cashier/Admin',
-    type: 'INTERNAL',
-    basePay: 1300.00,
-    commission: null,
-    deductions: null,
-    netPay: 1300.00
-  },
-  {
-    id: '4',
-    name: 'Jose',
-    role: 'Lead Detailer',
-    type: 'INTERNAL',
-    basePay: 7100.00,
-    commission: null,
-    deductions: null,
-    netPay: 7100.00
-  },
-  {
-    id: '5',
-    name: 'Ibarra',
-    role: 'Lead Detailer',
-    type: 'INTERNAL',
-    basePay: 1300.00,
-    commission: null,
-    deductions: null,
-    netPay: 1300.00
-  },
-  {
-    id: '6',
-    name: 'Rizal',
-    role: 'Carwasher',
-    type: 'INTERNAL',
-    basePay: 1300.00,
-    commission: null,
-    deductions: null,
-    netPay: 1300.00
-  }
-];
-*/

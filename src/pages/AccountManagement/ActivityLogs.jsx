@@ -1,15 +1,60 @@
 // pages/AccountManagement/ActivityLogs.jsx
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import styles from './ActivityLogs.module.css';
 
+const STORAGE_KEY = 'activityLogs';
+
 const ActivityLogs = ({ searchTerm }) => {
-  const [logs, setLogs] = useState([
-    { id: 1, user: 'Admin User', action: 'Added new user: Juan Dela Cruz', timestamp: '2026-03-27 10:30 AM' },
-    { id: 2, user: 'Juan Dela Cruz', action: 'Updated booking #0002 status to COMPLETED', timestamp: '2026-03-27 09:45 AM' },
-    { id: 3, user: 'Admin User', action: 'Modified inventory: Car Shampoo quantity updated', timestamp: '2026-03-26 03:20 PM' },
-    { id: 4, user: 'Maria Santos', action: 'Processed payment of ₱200.00', timestamp: '2026-03-26 02:15 PM' },
-    { id: 5, user: 'System', action: 'Backup completed successfully', timestamp: '2026-03-26 12:00 AM' }
-  ]);
+  const [logs, setLogs] = useState(() => {
+    const saved = localStorage.getItem(STORAGE_KEY);
+    if (saved) {
+      try {
+        return JSON.parse(saved);
+      } catch (e) {
+        console.error('Error parsing saved activity logs:', e);
+      }
+    }
+
+    return [
+      { id: 1, user: 'Admin User', action: 'Added new user: Juan Dela Cruz', timestamp: '2026-03-27 10:30 AM' },
+      { id: 2, user: 'Juan Dela Cruz', action: 'Updated booking #0002 status to COMPLETED', timestamp: '2026-03-27 09:45 AM' },
+      { id: 3, user: 'Admin User', action: 'Modified inventory: Car Shampoo quantity updated', timestamp: '2026-03-26 03:20 PM' },
+      { id: 4, user: 'Maria Santos', action: 'Processed payment of ₱200.00', timestamp: '2026-03-26 02:15 PM' },
+      { id: 5, user: 'System', action: 'Backup completed successfully', timestamp: '2026-03-26 12:00 AM' }
+    ];
+  });
+
+  useEffect(() => {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(logs));
+  }, [logs]);
+
+  useEffect(() => {
+    const handleNewLog = (event) => {
+      const entry = event.detail;
+      if (!entry || !entry.action) return;
+
+      const timestamp = entry.timestamp || new Date().toLocaleString('en-PH', {
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: true
+      });
+
+      const newLog = {
+        id: Date.now().toString(),
+        user: entry.user || 'System',
+        action: entry.action,
+        timestamp
+      };
+
+      setLogs((prevLogs) => [newLog, ...prevLogs]);
+    };
+
+    window.addEventListener('activityLogEntry', handleNewLog);
+    return () => window.removeEventListener('activityLogEntry', handleNewLog);
+  }, []);
 
   const filteredLogs = logs.filter(log =>
     log.user.toLowerCase().includes(searchTerm.toLowerCase()) ||
