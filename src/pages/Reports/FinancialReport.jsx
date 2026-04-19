@@ -6,14 +6,6 @@ const STORAGE_KEY = 'financialReportData'
 
 const initialExpenses = [
   {
-    id: '1',
-    date: '2026-03-20',
-    productName: 'Staff Salary (Week 3)',
-    category: 'Salary',
-    amount: 8500.00,
-    type: 'expense'
-  },
-  {
     id: '2',
     date: '2026-03-21',
     productName: 'Water Bill',
@@ -61,7 +53,8 @@ function FinancialReport() {
     const saved = localStorage.getItem(`${STORAGE_KEY}_expenses`)
     if (saved) {
       try {
-        return JSON.parse(saved)
+        const parsed = JSON.parse(saved)
+        return parsed.filter(exp => exp.productName !== 'Staff Salary (Week 3)')
       } catch (e) {
         console.error('Error parsing saved expenses:', e)
         return initialExpenses
@@ -112,6 +105,58 @@ function FinancialReport() {
       console.error('Error saving revenue to localStorage:', e)
     }
   }, [revenue])
+
+  // Sync payroll data to salary expenses
+  useEffect(() => {
+    const handlePayrollUpdate = () => {
+      try {
+        const payrollData = localStorage.getItem('payrollData_employees')
+        if (payrollData) {
+          const employees = JSON.parse(payrollData)
+          const totalNetPay = employees.reduce((sum, emp) => sum + (emp.netPay || 0), 0)
+          
+          if (totalNetPay > 0) {
+            setExpenses(prev => {
+              // Check if a salary expense already exists (ID: 'salary-payroll')
+              const salaryExpenseIndex = prev.findIndex(exp => exp.id === 'salary-payroll')
+              const today = new Date().toISOString().split('T')[0]
+              
+              if (salaryExpenseIndex !== -1) {
+                // Update existing salary expense
+                const updated = [...prev]
+                updated[salaryExpenseIndex] = {
+                  ...updated[salaryExpenseIndex],
+                  amount: totalNetPay,
+                  date: today
+                }
+                return updated
+              } else {
+                // Create new salary expense from payroll
+                return [...prev, {
+                  id: 'salary-payroll',
+                  date: today,
+                  productName: 'Staff Salary',
+                  category: 'Salary',
+                  amount: totalNetPay,
+                  type: 'expense'
+                }]
+              }
+            })
+          }
+        }
+      } catch (e) {
+        console.error('Error syncing payroll to expenses:', e)
+      }
+    }
+
+    // Listen for payroll updates
+    window.addEventListener('payrollUpdated', handlePayrollUpdate)
+    
+    // Initial sync on mount
+    handlePayrollUpdate()
+
+    return () => window.removeEventListener('payrollUpdated', handlePayrollUpdate)
+  }, [])
 
   // Calculate totals
   const totalRevenue = revenue.reduce((sum, item) => sum + item.amount, 0)
