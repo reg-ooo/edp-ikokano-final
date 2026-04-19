@@ -1,5 +1,6 @@
 // BookingReport.jsx
 import { useState, useEffect, useMemo } from 'react';
+import { createPortal } from 'react-dom';
 import './BookingReport.css';
 
 const STORAGE_KEY = 'manageBookingsData';
@@ -70,6 +71,12 @@ function BookingReport() {
     const digits = text.replace(/[^\d.]/g, '')
     return digits ? parseFloat(digits) : 0
   }
+
+  // Scroll-lock: disable body scroll when panel is open
+  useEffect(() => {
+    document.body.style.overflow = isModalOpen ? 'hidden' : '';
+    return () => { document.body.style.overflow = ''; };
+  }, [isModalOpen]);
 
   const findService = (serviceName) => {
     return services.find((s) => s.serviceName === serviceName)
@@ -423,7 +430,7 @@ function BookingReport() {
       </div>
 
       {/* Add/Edit Modal */}
-      {isModalOpen && (
+      {isModalOpen && createPortal(
         <div className="modal-overlay" onClick={closeModal}>
           <div className="modal" onClick={(e) => e.stopPropagation()}>
             <h3>{editingBooking ? 'Edit Booking' : 'New Booking'}</h3>
@@ -600,7 +607,8 @@ function BookingReport() {
               </div>
             </form>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </div>
   );

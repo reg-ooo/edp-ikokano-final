@@ -1,5 +1,6 @@
 // FinancialReport.jsx
 import { useState, useEffect } from 'react'
+import { createPortal } from 'react-dom'
 import './FinancialReport.css'
 
 const STORAGE_KEY = 'financialReportData'
@@ -105,6 +106,12 @@ function FinancialReport() {
       console.error('Error saving revenue to localStorage:', e)
     }
   }, [revenue])
+
+  // Scroll-lock: disable body scroll when panel is open
+  useEffect(() => {
+    document.body.style.overflow = isModalOpen ? 'hidden' : '';
+    return () => { document.body.style.overflow = ''; };
+  }, [isModalOpen]);
 
   // Calculate totals
   const totalRevenue = revenue.reduce((sum, item) => sum + item.amount, 0)
@@ -297,7 +304,7 @@ function FinancialReport() {
       </div>
 
       {/* Add/Edit Modal */}
-      {isModalOpen && (
+      {isModalOpen && createPortal(
         <div className="modal-overlay" onClick={closeModal}>
           <div className="modal" onClick={(e) => e.stopPropagation()}>
             <h3>{editExpenseId ? 'Edit Expense' : 'Add New Expense'}</h3>
@@ -373,7 +380,8 @@ function FinancialReport() {
               </div>
             </form>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </div>
   )

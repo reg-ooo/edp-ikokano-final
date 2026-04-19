@@ -1,5 +1,6 @@
 // Inventory.jsx
 import { useState, useEffect } from 'react'
+import { createPortal } from 'react-dom'
 import { updateTimestamp } from '../utils/timeUtils'
 import './Inventory.css'
 
@@ -70,6 +71,12 @@ function Inventory() {
       console.error('Error saving inventory to localStorage:', e)
     }
   }, [inventory])
+
+  // Scroll-lock: disable body scroll when panel is open
+  useEffect(() => {
+    document.body.style.overflow = isModalOpen ? 'hidden' : '';
+    return () => { document.body.style.overflow = ''; };
+  }, [isModalOpen]);
 
   const openCreateForm = () => {
     setEditItemId(null)
@@ -231,7 +238,7 @@ function Inventory() {
         </tbody>
       </table>
 
-      {isModalOpen && (
+      {isModalOpen && createPortal(
         <div className="modal-overlay" onClick={closeModal}>
           <div className="modal" onClick={(e) => e.stopPropagation()}>
             <h3>{editItemId ? 'Edit Item' : 'Add Item'}</h3>
@@ -301,7 +308,8 @@ function Inventory() {
               </div>
             </form>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </div>
   )

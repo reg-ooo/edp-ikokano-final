@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { createPortal } from 'react-dom'
 import './ManageServices.css'
 
 const STORAGE_KEY = 'manageServicesList'
@@ -74,6 +75,12 @@ function ManageServices() {
   useEffect(() => {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(services))
   }, [services])
+
+  // Scroll-lock: disable body scroll when panel is open
+  useEffect(() => {
+    document.body.style.overflow = isModalOpen || isDeleteModalOpen ? 'hidden' : '';
+    return () => { document.body.style.overflow = ''; };
+  }, [isModalOpen, isDeleteModalOpen]);
 
   const openCreateForm = () => {
     setEditServiceId(null)
@@ -191,7 +198,7 @@ function ManageServices() {
         </tbody>
       </table>
 
-      {isModalOpen && (
+      {isModalOpen && createPortal(
         <div className="modal-overlay" onClick={closeModal}>
           <div className="modal" onClick={(e) => e.stopPropagation()}>
             <h3>{editServiceId ? 'Edit Service Details' : 'Create Service'}</h3>
@@ -237,10 +244,11 @@ function ManageServices() {
               </div>
             </form>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
 
-      {isDeleteModalOpen && deleteService && (
+      {isDeleteModalOpen && deleteService && createPortal(
         <div className="modal-overlay" onClick={() => setIsDeleteModalOpen(false)}>
           <div className="modal" onClick={(e) => e.stopPropagation()}>
             <h3>Confirm Deletion</h3>
@@ -257,7 +265,8 @@ function ManageServices() {
               }}>Cancel</button>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </div>
   )
