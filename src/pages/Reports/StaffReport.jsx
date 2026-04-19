@@ -447,12 +447,6 @@ function StaffReport() {
               {/* Bottom Tabs */}
               <div className="employee-bottom-tabs">
                 <button 
-                  className={`bottom-tab ${activeTab === 'work' ? 'active' : ''}`}
-                  onClick={() => setActiveTab('work')}
-                >
-                  Lead Detailer
-                </button>
-                <button 
                   className={`bottom-tab ${activeTab === 'work-attendance' ? 'active' : ''}`}
                   onClick={() => setActiveTab('work-attendance')}
                 >
@@ -465,6 +459,118 @@ function StaffReport() {
                   Compensation
                 </button>
               </div>
+
+              {/* Work & Attendance Tab Content */}
+              {activeTab === 'work-attendance' && (
+                <div className="work-attendance-details">
+                  <div className="details-card">
+                    <h4>Attendance Records</h4>
+                    <div className="attendance-detailed-grid">
+                      <div className="attendance-item">
+                        <span className="label">Days Present</span>
+                        <span className="value present">{selectedStaff.attendance.present}</span>
+                      </div>
+                      <div className="attendance-item">
+                        <span className="label">Days Absent</span>
+                        <span className="value absent">{selectedStaff.attendance.absent}</span>
+                      </div>
+                      <div className="attendance-item">
+                        <span className="label">Late Arrivals</span>
+                        <span className="value late">{selectedStaff.attendance.late}</span>
+                      </div>
+                      <div className="attendance-item">
+                        <span className="label">Total Days</span>
+                        <span className="value total">{selectedStaff.attendance.present + selectedStaff.attendance.absent}</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="details-card">
+                    <h4>Work Performance</h4>
+                    <div className="performance-metrics">
+                      <div className="metric-row">
+                        <span className="metric-label">Attendance Rate:</span>
+                        <div className="metric-bar">
+                          <div 
+                            className="metric-progress"
+                            style={{ 
+                              width: `${(selectedStaff.attendance.present / 
+                                (selectedStaff.attendance.present + selectedStaff.attendance.absent)) * 100}%` 
+                            }}
+                          ></div>
+                        </div>
+                        <span className="metric-value">
+                          {Math.round((selectedStaff.attendance.present / 
+                            (selectedStaff.attendance.present + selectedStaff.attendance.absent)) * 100)}%
+                        </span>
+                      </div>
+                      <div className="metric-row">
+                        <span className="metric-label">Punctuality Rate:</span>
+                        <div className="metric-bar">
+                          <div 
+                            className="metric-progress"
+                            style={{ 
+                              width: `${((selectedStaff.attendance.present - selectedStaff.attendance.late) / 
+                                selectedStaff.attendance.present) * 100}%` 
+                            }}
+                          ></div>
+                        </div>
+                        <span className="metric-value">
+                          {Math.round(((selectedStaff.attendance.present - selectedStaff.attendance.late) / 
+                            selectedStaff.attendance.present) * 100)}%
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Compensation Tab Content */}
+              {activeTab === 'compensation' && (
+                <div className="compensation-details">
+                  <div className="details-card">
+                    <h4>Compensation Breakdown</h4>
+                    <div className="compensation-breakdown">
+                      <div className="compensation-row">
+                        <span className="comp-label">Monthly Base Salary:</span>
+                        <span className="comp-value base">₱{selectedStaff.payroll.basic.toLocaleString()}</span>
+                      </div>
+                      <div className="compensation-row">
+                        <span className="comp-label">Overtime/Commission:</span>
+                        <span className="comp-value positive">+₱{selectedStaff.payroll.overtime.toLocaleString()}</span>
+                      </div>
+                      <div className="compensation-row">
+                        <span className="comp-label">Deductions:</span>
+                        <span className="comp-value negative">-₱{selectedStaff.payroll.deductions.toLocaleString()}</span>
+                      </div>
+                      <div className="compensation-row total">
+                        <span className="comp-label">Net Pay:</span>
+                        <span className="comp-value net">₱{selectedStaff.payroll.net.toLocaleString()}</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="details-card">
+                    <h4>Salary Information</h4>
+                    <div className="salary-info">
+                      <div className="salary-item">
+                        <span className="label">Annual Salary:</span>
+                        <span className="value">₱{(selectedStaff.payroll.basic * 12).toLocaleString()}</span>
+                      </div>
+                      <div className="salary-item">
+                        <span className="label">Monthly Average:</span>
+                        <span className="value">₱{selectedStaff.payroll.net.toLocaleString()}</span>
+                      </div>
+                      <div className="salary-item">
+                        <span className="label">Deduction Rate:</span>
+                        <span className="value percentage">
+                          {((selectedStaff.payroll.deductions / selectedStaff.payroll.basic) * 100).toFixed(2)}%
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
             </>
           )}
         </div>
