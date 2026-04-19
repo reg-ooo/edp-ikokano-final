@@ -201,8 +201,8 @@ function ManageServices() {
               <td>{service.duration}</td>
               <td className="manage-services-actions">
                 <button className="view-btn" onClick={() => openViewPanel(service)}>View</button>
-                <button className="link-btn" onClick={() => openEditForm(service)}>Edit</button>
-                <button className="link-btn delete" onClick={() => handleDelete(service.id, service.serviceName)}>Delete</button>
+                <button className="edit-btn" onClick={() => openEditForm(service)}>Edit</button>
+                <button className="delete-btn" onClick={() => handleDelete(service.id, service.serviceName)}>Delete</button>
               </td>
             </tr>
           ))}

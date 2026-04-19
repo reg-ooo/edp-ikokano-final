@@ -267,6 +267,21 @@ function StaffReport() {
     setIsEditModalOpen(false)
   }
 
+  const getAttendanceRate = (attendance) => {
+    const present = Number(attendance?.present) || 0
+    const absent = Number(attendance?.absent) || 0
+    const total = present + absent
+    if (total === 0) return 0
+    return (present / total) * 100
+  }
+
+  const getPunctualityRate = (attendance) => {
+    const present = Number(attendance?.present) || 0
+    const late = Number(attendance?.late) || 0
+    if (present === 0) return 0
+    return ((present - late) / present) * 100
+  }
+
   return (
     <div className="staff-report-wrap">
       {/* Header with Tabs */}
@@ -407,14 +422,12 @@ function StaffReport() {
                           <div 
                             className="progress-fill"
                             style={{ 
-                              width: `${(selectedStaff.attendance.present / 
-                                (selectedStaff.attendance.present + selectedStaff.attendance.absent)) * 100}%` 
+                              width: `${getAttendanceRate(selectedStaff.attendance)}%` 
                             }}
                           ></div>
                         </div>
                         <div className="rate-value">
-                          {Math.round((selectedStaff.attendance.present / 
-                            (selectedStaff.attendance.present + selectedStaff.attendance.absent)) * 100)}%
+                          {Math.round(getAttendanceRate(selectedStaff.attendance))}%
                         </div>
                       </div>
                     </div>
@@ -494,14 +507,12 @@ function StaffReport() {
                           <div 
                             className="metric-progress"
                             style={{ 
-                              width: `${(selectedStaff.attendance.present / 
-                                (selectedStaff.attendance.present + selectedStaff.attendance.absent)) * 100}%` 
+                              width: `${getAttendanceRate(selectedStaff.attendance)}%` 
                             }}
                           ></div>
                         </div>
                         <span className="metric-value">
-                          {Math.round((selectedStaff.attendance.present / 
-                            (selectedStaff.attendance.present + selectedStaff.attendance.absent)) * 100)}%
+                          {Math.round(getAttendanceRate(selectedStaff.attendance))}%
                         </span>
                       </div>
                       <div className="metric-row">
@@ -510,14 +521,12 @@ function StaffReport() {
                           <div 
                             className="metric-progress"
                             style={{ 
-                              width: `${((selectedStaff.attendance.present - selectedStaff.attendance.late) / 
-                                selectedStaff.attendance.present) * 100}%` 
+                              width: `${getPunctualityRate(selectedStaff.attendance)}%` 
                             }}
                           ></div>
                         </div>
                         <span className="metric-value">
-                          {Math.round(((selectedStaff.attendance.present - selectedStaff.attendance.late) / 
-                            selectedStaff.attendance.present) * 100)}%
+                          {Math.round(getPunctualityRate(selectedStaff.attendance))}%
                         </span>
                       </div>
                     </div>

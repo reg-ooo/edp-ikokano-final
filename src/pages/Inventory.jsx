@@ -109,7 +109,6 @@ function Inventory() {
     setIsModalOpen(false)
     setEditItemId(null)
   }
-
   const closeViewPanel = () => {
     setViewItem(null)
   }
@@ -232,9 +231,9 @@ function Inventory() {
                 </span>
               </td>
               <td className="inventory-actions">
-                <button className="link-btn" onClick={() => openViewPanel(item)}>View</button>
-                <button className="link-btn" onClick={() => openEditForm(item)}>Edit</button>
-                <button className="link-btn delete" onClick={() => handleDelete(item.id, item.productName)}>Delete</button>
+                <button className="view-btn" onClick={() => openViewPanel(item)}>View</button>
+                <button className="edit-btn" onClick={() => openEditForm(item)}>Edit</button>
+                <button className="delete-btn" onClick={() => handleDelete(item.id, item.productName)}>Delete</button>
               </td>
             </tr>
           ))}
@@ -355,6 +354,7 @@ function Inventory() {
               <div className="buttons-row">
                 <button type="submit" className="primary-btn">{editItemId ? 'Save Changes' : 'Add Item'}</button>
                 <button type="button" onClick={closeModal}>Cancel</button>
+                {editItemId && <button type="button" className="modal-delete-btn" onClick={() => handleDelete(editItemId, formData.productName)}>Delete</button>}
               </div>
             </form>
           </div>

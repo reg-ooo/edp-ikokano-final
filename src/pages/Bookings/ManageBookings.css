@@ -98,24 +98,47 @@
 
 .manage-bookings-actions {
   display: flex;
-  gap: 0.75rem;  /* Adds space between buttons */
+  gap: 0.5rem;
   align-items: center;
-}
-
-.manage-bookings-actions button,
-.manage-bookings-actions a {
-  display: inline-flex;
-  align-items: center;
-  line-height: 1;
-  margin: 0;
-  text-decoration: none;
-  color: #1d4ed8;
-  font-weight: 600;
 }
 
 .manage-bookings-actions a:hover,
 .manage-bookings-actions button:hover {
   text-decoration: underline;
+}
+
+.edit-btn {
+  background: none;
+  border: none;
+  color: #3b82f6;
+  font-weight: 600;
+  font-size: 0.75rem;
+  cursor: pointer;
+  padding: 0.25rem 0.5rem;
+  border-radius: 6px;
+  transition: all 0.2s;
+}
+
+.edit-btn:hover {
+  background: #eff6ff;
+  color: #2563eb;
+}
+
+.delete-btn {
+  background: none;
+  border: none;
+  color: #ef4444;
+  font-weight: 600;
+  font-size: 0.75rem;
+  cursor: pointer;
+  padding: 0.25rem 0.5rem;
+  border-radius: 6px;
+  transition: all 0.2s;
+}
+
+.delete-btn:hover {
+  background: #fef2f2;
+  color: #dc2626;
 }
 
 .staff-assignment-select {

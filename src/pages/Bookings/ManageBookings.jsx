@@ -387,8 +387,8 @@ function ManageBookings() {
                 </td>
                 <td className="manage-bookings-actions">
                   <button className="view-btn" onClick={() => openViewPanel(row)}>View</button>
-                  <button className="link-btn" onClick={() => openEditForm(row)}>Edit</button>
-                  <button className="link-btn delete" onClick={() => handleDelete(row.id, row.name)}>Delete</button>
+                  <button className="edit-btn" onClick={() => openEditForm(row)}>Edit</button>
+                  <button className="delete-btn" onClick={() => handleDelete(row.id, row.name)}>Delete</button>
                 </td>
               </tr>
             )

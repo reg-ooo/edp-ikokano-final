@@ -634,7 +634,7 @@
   background: #f8fafc;
 }
 
-.delete-btn {
+.modal-actions .delete-btn {
   background: #ef4444;
   color: white;
   border: none;
@@ -646,7 +646,7 @@
   flex: 1;
 }
 
-.delete-btn:hover {
+.modal-actions .delete-btn:hover {
   background: #dc2626;
 }
 

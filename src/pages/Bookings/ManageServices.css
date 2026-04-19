@@ -85,30 +85,42 @@
 
 .manage-services-actions {
   display: flex;
-  gap: 1.25rem;  /* Increased space between buttons */
+  gap: 0.5rem;
   align-items: center;
 }
 
-.link-btn {
-  border: none;
+.edit-btn {
   background: none;
-  color: #1d4ed8;
-  text-decoration: none !important;
-  font-weight: 700;
+  border: none;
+  color: #3b82f6;
+  font-weight: 600;
+  font-size: 0.75rem;
   cursor: pointer;
-  padding: 0;
+  padding: 0.25rem 0.5rem;
+  border-radius: 6px;
+  transition: all 0.2s;
 }
 
-.link-btn:hover {
-  color: #1740a4;
+.edit-btn:hover {
+  background: #eff6ff;
+  color: #2563eb;
 }
 
-.link-btn.delete {
+.delete-btn {
+  background: none;
+  border: none;
+  color: #ef4444;
+  font-weight: 600;
+  font-size: 0.75rem;
+  cursor: pointer;
+  padding: 0.25rem 0.5rem;
+  border-radius: 6px;
+  transition: all 0.2s;
+}
+
+.delete-btn:hover {
+  background: #fef2f2;
   color: #dc2626;
-}
-
-.link-btn.delete:hover {
-  color: #b91c1c;
 }
 
 .primary-btn {

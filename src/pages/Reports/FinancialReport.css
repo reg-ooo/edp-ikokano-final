@@ -448,14 +448,14 @@
   background: #f9fafb;
 }
 
-.delete-btn {
+.buttons-row .delete-btn {
   background: #ef4444;
   color: white;
   border: none;
   margin-left: auto;
 }
 
-.delete-btn:hover {
+.buttons-row .delete-btn:hover {
   background: #dc2626;
 }
 

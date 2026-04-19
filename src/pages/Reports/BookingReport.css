@@ -409,7 +409,7 @@
   border-color: #cbd5e1;
 }
 
-.delete-btn {
+.modal-actions .delete-btn {
   background: #ef4444;
   color: white;
   border: none;
@@ -422,7 +422,7 @@
   transition: all 0.2s;
 }
 
-.delete-btn:hover {
+.modal-actions .delete-btn:hover {
   background: #dc2626;
 }
 
