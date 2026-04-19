@@ -14,6 +14,7 @@ function AccountManagement() {
   const [yourAccountOpen, setYourAccountOpen] = useState(false);
   const [filteredSidebarItems, setFilteredSidebarItems] = useState([]);
   const [showSearchResults, setShowSearchResults] = useState(false);
+  const [refreshTrigger, setRefreshTrigger] = useState(0);
 
   // Define all searchable settings items
   const settingsItems = [
@@ -58,9 +59,9 @@ function AccountManagement() {
   const renderPage = () => {
     switch(activePage) {
       case 'userList':
-        return <UserList searchTerm={searchTerm} />;
+        return <UserList searchTerm={searchTerm} refreshTrigger={refreshTrigger} />;
       case 'addUser':
-        return <AddUser />;
+        return <AddUser onUserAdded={() => setRefreshTrigger(prev => prev + 1)} />;
       case 'activityLogs':
         return <ActivityLogs searchTerm={searchTerm} />;
       case 'roles':
@@ -68,7 +69,7 @@ function AccountManagement() {
       case 'account':
         return <AccountSettings />;
       default:
-        return <UserList searchTerm={searchTerm} />;
+        return <UserList searchTerm={searchTerm} refreshTrigger={refreshTrigger} />;
     }
   };
 

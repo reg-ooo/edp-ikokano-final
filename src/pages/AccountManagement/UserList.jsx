@@ -1,34 +1,77 @@
 // pages/AccountManagement/UserList.jsx
 import { useState, useEffect } from 'react';
 import styles from './UserList.module.css';
+import { getUsers, deleteUser, searchUsers } from '../../utils/userStorage';
+import EditUser from './EditUser';
 
-const UserList = ({ searchTerm }) => {
-  const [users, setUsers] = useState([
-    { id: 1, name: 'Admin User', email: 'admin@carwash.com', role: 'Administrator' },
-    { id: 2, name: 'Juan Dela Cruz', email: 'juan@carwash.com', role: 'Staff' },
-    { id: 3, name: 'Maria Santos', email: 'maria@carwash.com', role: 'Staff' },
-    { id: 4, name: 'Jose Rizal', email: 'jose@carwash.com', role: 'Staff' }
-  ]);
+const UserList = ({ searchTerm, refreshTrigger }) => {
+  const [users, setUsers] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [editingUserId, setEditingUserId] = useState(null);
+
+  // Load users from localStorage on component mount and when refreshTrigger changes
+  useEffect(() => {
+    const loadUsers = () => {
+      const storedUsers = getUsers();
+      setUsers(storedUsers);
+      setLoading(false);
+    };
+    loadUsers();
+  }, [refreshTrigger]);
 
   // Filter users based on search term
-  const filteredUsers = users.filter(user =>
-    user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    user.email.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const filteredUsers = searchTerm ? searchUsers(searchTerm) : users;
 
   const handleEdit = (user) => {
-    alert(`Edit user: ${user.name}`);
+    setEditingUserId(user.id);
+  };
+
+  const handleUpdateUser = (updatedUser) => {
+    setUsers(prevUsers =>
+      prevUsers.map(user =>
+        user.id === updatedUser.id ? updatedUser : user
+      )
+    );
+    setEditingUserId(null);
+  };
+
+  const handleCancelEdit = () => {
+    setEditingUserId(null);
   };
 
   const handleDelete = (id, name) => {
-    if (window.confirm(`Delete ${name}?`)) {
-      setUsers(users.filter(user => user.id !== id));
+    if (window.confirm(`Are you sure you want to delete ${name}? This action cannot be undone.`)) {
+      const updatedUsers = deleteUser(id);
+      setUsers(updatedUsers);
+      alert(`${name} has been deleted successfully.`);
     }
   };
+
+  if (loading) {
+    return (
+      <div className={styles['settings-panel']}>
+        <h2>User List</h2>
+        <div className={styles['loading']}>Loading users...</div>
+      </div>
+    );
+  }
+
+  if (editingUserId) {
+    return (
+      <EditUser
+        userId={editingUserId}
+        onClose={handleCancelEdit}
+        onUpdate={handleUpdateUser}
+      />
+    );
+  }
 
   return (
     <div className={styles['settings-panel']}>
       <h2>User List</h2>
+      <div className={styles['user-stats']}>
+        <span>Total Users: {users.length}</span>
+      </div>
       <div className={styles['user-list']}>
         {filteredUsers.map(user => (
           <div key={user.id} className={styles['user-item']}>
@@ -43,8 +86,11 @@ const UserList = ({ searchTerm }) => {
             </div>
           </div>
         ))}
-        {filteredUsers.length === 0 && (
-          <div className={styles['empty-state']}>No users found</div>
+        {filteredUsers.length === 0 && users.length > 0 && (
+          <div className={styles['empty-state']}>No users match your search</div>
+        )}
+        {users.length === 0 && (
+          <div className={styles['empty-state']}>No users found. Add some users first.</div>
         )}
       </div>
     </div>

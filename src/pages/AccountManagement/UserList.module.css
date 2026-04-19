@@ -11,6 +11,23 @@
   margin: 0 0 1.5rem 0;
 }
 
+.user-stats {
+  margin-bottom: 1rem;
+  padding: 0.75rem 1rem;
+  background: #f1f5f9;
+  border-radius: 8px;
+  font-size: 0.875rem;
+  color: #475569;
+  font-weight: 500;
+}
+
+.loading {
+  text-align: center;
+  padding: 2rem;
+  color: #64748b;
+  font-size: 0.875rem;
+}
+
 .user-list {
   display: flex;
   flex-direction: column;
