@@ -458,6 +458,205 @@
   color: #9ca3af;
 }
 
+/* Work & Attendance Styles */
+.work-attendance-details {
+  margin-bottom: 2rem;
+}
+
+.attendance-detailed-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.attendance-item {
+  background: #f9fafb;
+  padding: 1.25rem;
+  border-radius: 12px;
+  text-align: center;
+  border: 1px solid #e5e7eb;
+  transition: all 0.2s;
+}
+
+.attendance-item:hover {
+  border-color: #1d4ed8;
+  background: #f0f4ff;
+}
+
+.attendance-item .label {
+  display: block;
+  font-size: 0.8rem;
+  color: #6b7280;
+  margin-bottom: 0.75rem;
+  font-weight: 500;
+}
+
+.attendance-item .value {
+  display: block;
+  font-size: 1.75rem;
+  font-weight: 700;
+  margin-bottom: 0.25rem;
+}
+
+.attendance-item .value.present {
+  color: #10b981;
+}
+
+.attendance-item .value.absent {
+  color: #ef4444;
+}
+
+.attendance-item .value.late {
+  color: #f59e0b;
+}
+
+.attendance-item .value.total {
+  color: #1d4ed8;
+}
+
+.performance-metrics {
+  margin-top: 1rem;
+}
+
+.metric-row {
+  display: grid;
+  grid-template-columns: 150px 1fr 60px;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem;
+  background: #f9fafb;
+  border-radius: 8px;
+  margin-bottom: 1rem;
+}
+
+.metric-label {
+  font-weight: 500;
+  color: #374151;
+  font-size: 0.9rem;
+}
+
+.metric-bar {
+  height: 8px;
+  background: #e5e7eb;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.metric-progress {
+  height: 100%;
+  background: linear-gradient(90deg, #1d4ed8, #3b82f6);
+  border-radius: 4px;
+  transition: width 0.5s ease;
+}
+
+.metric-value {
+  font-weight: 700;
+  color: #1d4ed8;
+  font-size: 0.9rem;
+  text-align: right;
+}
+
+/* Compensation Styles */
+.compensation-details {
+  margin-bottom: 2rem;
+}
+
+.compensation-breakdown {
+  background: white;
+}
+
+.compensation-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem;
+  border-bottom: 1px solid #f0f0f0;
+  transition: all 0.2s;
+}
+
+.compensation-row:hover {
+  background: #f9fafb;
+}
+
+.compensation-row:last-child {
+  border-bottom: none;
+}
+
+.compensation-row.total {
+  margin-top: 0.5rem;
+  padding-top: 1rem;
+  border-top: 2px solid #e5e7eb;
+  background: #f9fafb;
+}
+
+.comp-label {
+  font-weight: 500;
+  color: #6b7280;
+  font-size: 0.9rem;
+}
+
+.comp-value {
+  font-weight: 700;
+  font-size: 1rem;
+}
+
+.comp-value.base {
+  color: #1d4ed8;
+}
+
+.comp-value.positive {
+  color: #10b981;
+}
+
+.comp-value.negative {
+  color: #ef4444;
+}
+
+.comp-value.net {
+  color: #1d4ed8;
+  font-size: 1.1rem;
+}
+
+.salary-info {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+}
+
+.salary-item {
+  background: #f9fafb;
+  padding: 1.25rem;
+  border-radius: 12px;
+  border: 1px solid #e5e7eb;
+  transition: all 0.2s;
+}
+
+.salary-item:hover {
+  border-color: #1d4ed8;
+  background: #f0f4ff;
+}
+
+.salary-item .label {
+  display: block;
+  font-size: 0.8rem;
+  color: #6b7280;
+  margin-bottom: 0.75rem;
+  font-weight: 500;
+}
+
+.salary-item .value {
+  display: block;
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #1d4ed8;
+}
+
+.salary-item .value.percentage {
+  color: #6b7280;
+  font-size: 1rem;
+}
+
 .status-badge {
   display: inline-block;
   padding: 0.25rem 0.75rem;
@@ -469,6 +668,143 @@
 .status-badge.active {
   background: #d1fae5;
   color: #065f46;
+}
+
+/* Modal Styles */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.modal-content {
+  background: white;
+  border-radius: 16px;
+  width: min(600px, 90vw);
+  max-height: 90vh;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.5rem;
+  border-bottom: 1px solid #e5e7eb;
+  flex-shrink: 0;
+}
+
+.modal-header h2 {
+  margin: 0;
+  font-size: 1.3rem;
+  font-weight: 600;
+  color: #111;
+}
+
+.close-btn {
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  cursor: pointer;
+  color: #6b7280;
+  padding: 0.25rem 0.5rem;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+}
+
+.close-btn:hover {
+  background: #f3f4f6;
+  color: #374151;
+}
+
+/* Edit Staff Form */
+.edit-staff-form {
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  flex: 1;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.form-group label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #374151;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.form-group input,
+.form-group select {
+  border: 1px solid #d1d5db;
+  padding: 0.6rem 0.75rem;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  outline: none;
+  transition: all 0.2s;
+}
+
+.form-group input:focus,
+.form-group select:focus {
+  border-color: #1d4ed8;
+  box-shadow: 0 0 0 2px rgba(29, 78, 216, 0.1);
+}
+
+.form-actions {
+  display: flex;
+  gap: 1rem;
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid #e5e7eb;
+}
+
+.cancel-btn,
+.save-btn {
+  flex: 1;
+  padding: 0.75rem;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-size: 0.9rem;
+}
+
+.cancel-btn {
+  background: #f3f4f6;
+  color: #374151;
+}
+
+.cancel-btn:hover {
+  background: #e5e7eb;
+}
+
+.save-btn {
+  background: #1d4ed8;
+  color: white;
+}
+
+.save-btn:hover {
+  background: #1e40af;
 }
 
 /* Responsive */
@@ -485,6 +821,14 @@
   .attendance-stats-grid {
     grid-template-columns: 1fr;
   }
+
+  .attendance-detailed-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .salary-info {
+    grid-template-columns: 1fr;
+  }
   
   .employee-bottom-tabs {
     flex-direction: column;
@@ -499,5 +843,10 @@
     text-align: center;
     padding: 0.6rem 0.5rem;
     font-size: 0.85rem;
+  }
+
+  .metric-row {
+    grid-template-columns: 120px 1fr 50px;
+    padding: 0.75rem;
   }
 }

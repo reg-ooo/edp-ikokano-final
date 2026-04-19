@@ -98,7 +98,7 @@ function Header({ isOpen, setOpen }) {
               ⚠️ Low Stock Alert: {lowStockItems.length} item(s) running low
               {lowStockItems.map(item => (
                 <div key={item.id} style={{ marginTop: '4px', fontSize: '12px' }}>
-                  • {item.productName}: {item.stockLevel} / {item.lowStockThreshold}
+                  • {item.productName}: {item.stockLevel}
                 </div>
               ))}
             </div>
