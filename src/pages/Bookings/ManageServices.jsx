@@ -3,7 +3,7 @@ import './ManageServices.css'
 
 const STORAGE_KEY = 'manageServicesList'
 
-const initialServices = [
+/*const initialServices = [
   { 
     id: '1', 
     serviceName: 'PFF Tinting', 
@@ -17,7 +17,7 @@ const initialServices = [
     servicePrice: '1000', 
     duration: '1 hour' 
   }
-]
+]*/
 
 const parseDuration = (duration = '') => {
   const hoursMatch = duration.match(/(\d+)\s*hour/)
@@ -158,8 +158,8 @@ function ManageServices() {
             value={sortOrder}
             onChange={(e) => setSortOrder(e.target.value)}
           >
-            <option value="asc">Sort A-Z</option>
-            <option value="desc">Sort Z-A</option>
+            <option value="asc">Sort Services A-Z</option>
+            <option value="desc">Sort Services Z-A</option>
           </select>
         </div>
       </div>

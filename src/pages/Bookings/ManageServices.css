@@ -83,50 +83,18 @@
   background: #f6f8fb;
 }
 
-.manage-services-status {
-  padding: 0.2rem 0.6rem;
-  border-radius: 999px;
-  font-size: 0.85rem;
-  font-weight: 600;
-}
-
-.manage-services-status.in-progress {
-  color: #155e75;
-  background: #bae6fd;
-}
-
-.manage-services-status.completed {
-  color: #166534;
-  background: #bbf7d0;
-}
-
-.manage-services-status.pending {
-  color: #713f12;
-  background: #fde68a;
-}
-
 .manage-services-actions {
   display: flex;
   gap: 0.75rem;  /* Adds space between buttons */
   align-items: center;
 }
 
-.manage-services-actions a {
-  text-decoration: none;
-  color: #1d4ed8;
-  font-weight: 600;
-}
-
-.manage-services-actions a:hover {
-  text-decoration: underline;
-}
-
 .link-btn {
   border: none;
   background: none;
   color: #1d4ed8;
+  text-decoration: none !important;
   font-weight: 700;
-  text-decoration: underline;
   cursor: pointer;
   padding: 0;
 }
@@ -136,12 +104,11 @@
 }
 
 .link-btn.delete {
-  color: #dc3545;
-  text-decoration: underline;
+  color: #dc2626;
 }
 
 .link-btn.delete:hover {
-  color: #bb2d3b;
+  color: #b91c1c;
 }
 
 .primary-btn {
@@ -150,7 +117,7 @@
   color: white;
   padding: 0.45rem 1rem;
   border-radius: 6px;
-  font-weight: 700;
+  font-weight: 600;
   cursor: pointer;
   transition: background-color 0.2s;
 }
@@ -228,10 +195,6 @@
   margin-top: 1rem;
   display: flex;
   gap: 0.75rem;
-}
-
-.modal-details p {
-  margin: 0.35rem 0;
 }
 
 /* Responsive Design - Matching ManageBookings */
