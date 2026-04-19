@@ -57,9 +57,6 @@ function InventoryReport() {
   const totalProducts = inventory.length;
   const totalUnits = inventory.reduce((sum, item) => sum + (item.stockLevel || 0), 0);
   const lowStockCount = inventory.filter(item => (item.stockLevel || 0) <= 5).length;
-  
-  // Find max quantity for graph scaling
-  const maxQuantity = Math.max(...inventory.map(item => item.stockLevel || 0), 1);
 
   const getStockStatus = (quantity) => {
     if (quantity <= 0) return 'out-of-stock';
@@ -155,13 +152,14 @@ function InventoryReport() {
           <div className="bar-chart">
             {filteredInventory.map((item) => {
               const quantity = item.stockLevel || 0;
-              const barWidth = (quantity / maxQuantity) * 100;
+              const capacity = item.maxCapacity || 1; 
+              const barWidth = Math.min((quantity / capacity) * 100, 100);
               const barColor = getBarColor(quantity);
               return (
                 <div key={item.id} className="bar-item">
                   <div className="bar-label">
                     <span className="bar-product">{item.productName}</span>
-                    <span className="bar-value">{quantity} {item.unit || 'UNITS'}</span>
+                    <span className="bar-value">{quantity} / {item.maxCapacity || '—'} {item.unit || 'UNITS'}</span>
                   </div>
                   <div className="bar-track">
                     <div 
@@ -172,7 +170,7 @@ function InventoryReport() {
                         transition: 'width 0.5s ease'
                       }}
                     >
-                      <span className="bar-percentage">{Math.round(barWidth)}%</span>
+                      <span className="bar-percentage">  {Math.round((quantity / (item.maxCapacity || 1)) * 100)}%</span>
                     </div>
                   </div>
                   <div className="bar-meta">

@@ -14,7 +14,8 @@ const initialInventory = [
     stockLevel: 12,
     unitPrice: 450.00,
     status: 'in-stock',
-    lowStockThreshold: 5
+    lowStockThreshold: 5,
+    maxCapacity: 50
   },
   {
     id: '2',
@@ -23,7 +24,8 @@ const initialInventory = [
     stockLevel: 2,
     unitPrice: 2000.00,
     status: 'low-stock',
-    lowStockThreshold: 5
+    lowStockThreshold: 5,
+    maxCapacity: 50
   }
 ]
 
@@ -150,7 +152,8 @@ function Inventory() {
         stockLevel: stockLevelNum,
         unitPrice: unitPriceNum,
         status: status,
-        lowStockThreshold: 5
+        lowStockThreshold: 5,
+        maxCapacity: 50
       }
       setInventory((prev) => [newItem, ...prev])
     }

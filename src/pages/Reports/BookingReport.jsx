@@ -193,18 +193,6 @@ function BookingReport() {
 
   const todayBookings = bookings.length
   const netRevenue = bookings.reduce((sum, booking) => sum + booking.amount, 0)
-  const activeBay = `${bookings.filter((b) => b.status === 'IN PROGRESS').length}/5`
-
-  const waitingBookings = bookings.filter((b) => b.status === 'PENDING')
-  const avgWaitTime = waitingBookings.length
-    ? formatWaitTime(
-        waitingBookings.reduce((sum, booking) => {
-          if (!booking.serviceDate) return sum
-          const diff = Math.max(0, new Date() - new Date(booking.serviceDate))
-          return sum + diff / 60000
-        }, 0) / waitingBookings.length
-      )
-    : '0 mins'
 
   const filteredBookings = bookings.filter((booking) => {
     const matchesSearch =
@@ -339,14 +327,6 @@ function BookingReport() {
         <div className="summary-card">
           <h4>NET REVENUE</h4>
           <p className="summary-number">₱{netRevenue.toLocaleString()}</p>
-        </div>
-        <div className="summary-card">
-          <h4>ACTIVE BAY</h4>
-          <p className="summary-number">{activeBay}</p>
-        </div>
-        <div className="summary-card">
-          <h4>AVG. WAIT TIME</h4>
-          <p className="summary-number">{avgWaitTime}</p>
         </div>
       </div>
 
