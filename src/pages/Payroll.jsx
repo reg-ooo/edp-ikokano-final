@@ -7,72 +7,7 @@ import './Payroll.css';
 
 const STORAGE_KEY = 'payrollData';
 
-// Initial payroll data based on the image
-// Commented out for now as it is only used for testing purposes
-/*
-const initialEmployees = [
-  {
-    id: '1',
-    name: 'Alejandro',
-    role: 'Lead Detailer',
-    type: 'INTERNAL',
-    basePay: 8500.00,
-    commission: null,
-    deductions: 500.00,
-    netPay: 8000.00
-  },
-  {
-    id: '2',
-    name: 'Linda',
-    role: 'Window Tint Specialist',
-    type: 'OUTSOURCE',
-    basePay: null,
-    commission: 2100.00,
-    deductions: null,
-    netPay: 2100.00
-  },
-  {
-    id: '3',
-    name: 'Samantha',
-    role: 'Cashier/Admin',
-    type: 'INTERNAL',
-    basePay: 1300.00,
-    commission: null,
-    deductions: null,
-    netPay: 1300.00
-  },
-  {
-    id: '4',
-    name: 'Jose',
-    role: 'Lead Detailer',
-    type: 'INTERNAL',
-    basePay: 7100.00,
-    commission: null,
-    deductions: null,
-    netPay: 7100.00
-  },
-  {
-    id: '5',
-    name: 'Ibarra',
-    role: 'Lead Detailer',
-    type: 'INTERNAL',
-    basePay: 1300.00,
-    commission: null,
-    deductions: null,
-    netPay: 1300.00
-  },
-  {
-    id: '6',
-    name: 'Rizal',
-    role: 'Carwasher',
-    type: 'INTERNAL',
-    basePay: 1300.00,
-    commission: null,
-    deductions: null,
-    netPay: 1300.00
-  }
-];
-*/
+//
 
 function Payroll() {
   const [employees, setEmployees] = useState(() => {
@@ -608,3 +543,70 @@ function Payroll() {
 }
 
 export default Payroll;
+
+// Initial payroll data based on the image
+// Commented out for now as it is only used for testing purposes
+/*
+const initialEmployees = [
+  {
+    id: '1',
+    name: 'Alejandro',
+    role: 'Lead Detailer',
+    type: 'INTERNAL',
+    basePay: 8500.00,
+    commission: null,
+    deductions: 500.00,
+    netPay: 8000.00
+  },
+  {
+    id: '2',
+    name: 'Linda',
+    role: 'Window Tint Specialist',
+    type: 'OUTSOURCE',
+    basePay: null,
+    commission: 2100.00,
+    deductions: null,
+    netPay: 2100.00
+  },
+  {
+    id: '3',
+    name: 'Samantha',
+    role: 'Cashier/Admin',
+    type: 'INTERNAL',
+    basePay: 1300.00,
+    commission: null,
+    deductions: null,
+    netPay: 1300.00
+  },
+  {
+    id: '4',
+    name: 'Jose',
+    role: 'Lead Detailer',
+    type: 'INTERNAL',
+    basePay: 7100.00,
+    commission: null,
+    deductions: null,
+    netPay: 7100.00
+  },
+  {
+    id: '5',
+    name: 'Ibarra',
+    role: 'Lead Detailer',
+    type: 'INTERNAL',
+    basePay: 1300.00,
+    commission: null,
+    deductions: null,
+    netPay: 1300.00
+  },
+  {
+    id: '6',
+    name: 'Rizal',
+    role: 'Carwasher',
+    type: 'INTERNAL',
+    basePay: 1300.00,
+    commission: null,
+    deductions: null,
+    netPay: 1300.00
+  }
+];
+*/

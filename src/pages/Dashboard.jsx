@@ -3,12 +3,10 @@ import './Dashboard.css';
 
 const BOOKING_STORAGE_KEY = 'manageBookingsData';
 const INVENTORY_STORAGE_KEY = 'inventoryData';
-const PAYROLL_STORAGE_KEY = 'payrollData_employees';
 
 function Dashboard() {
   const [bookings, setBookings] = useState([]);
   const [lowStockCount, setLowStockCount] = useState(0);
-  const [payrollExpense, setPayrollExpense] = useState(0);
 
   useEffect(() => {
     const loadBookings = () => {
@@ -39,25 +37,8 @@ function Dashboard() {
       }
     };
 
-    const loadPayroll = () => {
-      try {
-        const saved = localStorage.getItem(PAYROLL_STORAGE_KEY);
-        if (saved) {
-          const parsedPayroll = JSON.parse(saved);
-          const totalPay = parsedPayroll.reduce((sum, emp) => sum + (emp.netPay || 0), 0);
-          setPayrollExpense(totalPay);
-        } else {
-          setPayrollExpense(0);
-        }
-      } catch (e) {
-        console.error('Error loading payroll:', e);
-        setPayrollExpense(0);
-      }
-    };
-
     loadBookings();
     loadInventory();
-    loadPayroll();
 
     const handleStorageChange = (e) => {
       if (e.key === BOOKING_STORAGE_KEY) {
@@ -65,9 +46,6 @@ function Dashboard() {
       }
       if (e.key === INVENTORY_STORAGE_KEY) {
         loadInventory();
-      }
-      if (e.key === PAYROLL_STORAGE_KEY) {
-        loadPayroll();
       }
     };
 
@@ -79,20 +57,14 @@ function Dashboard() {
       loadInventory();
     };
 
-    const handlePayrollUpdated = () => {
-      loadPayroll();
-    };
-
     window.addEventListener('storage', handleStorageChange);
     window.addEventListener('bookingsUpdated', handleBookingsUpdated);
     window.addEventListener('inventoryUpdated', handleInventoryUpdated);
-    window.addEventListener('payrollUpdated', handlePayrollUpdated);
 
     return () => {
       window.removeEventListener('storage', handleStorageChange);
       window.removeEventListener('bookingsUpdated', handleBookingsUpdated);
       window.removeEventListener('inventoryUpdated', handleInventoryUpdated);
-      window.removeEventListener('payrollUpdated', handlePayrollUpdated);
     };
   }, []);
 
@@ -151,10 +123,6 @@ function Dashboard() {
           <div className="stat-card">
             <h3>Low Stocks Alert</h3>
             <p className="stat-value">{lowStockCount}</p>
-          </div>
-          <div className="stat-card">
-            <h3>Payroll Expense</h3>
-            <p className="stat-value" style={{ color: '#dc3545' }}>₱{payrollExpense.toLocaleString()}</p>
           </div>
         </div>
       </div>
