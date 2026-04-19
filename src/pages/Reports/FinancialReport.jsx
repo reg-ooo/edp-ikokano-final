@@ -6,14 +6,6 @@ const STORAGE_KEY = 'financialReportData'
 
 const initialExpenses = [
   {
-    id: '1',
-    date: '2026-03-20',
-    productName: 'Staff Salary (Week 3)',
-    category: 'Salary',
-    amount: 8500.00,
-    type: 'expense'
-  },
-  {
     id: '2',
     date: '2026-03-21',
     productName: 'Water Bill',
@@ -61,7 +53,8 @@ function FinancialReport() {
     const saved = localStorage.getItem(`${STORAGE_KEY}_expenses`)
     if (saved) {
       try {
-        return JSON.parse(saved)
+        const parsed = JSON.parse(saved)
+        return parsed.filter(exp => exp.productName !== 'Staff Salary (Week 3)')
       } catch (e) {
         console.error('Error parsing saved expenses:', e)
         return initialExpenses
@@ -112,63 +105,6 @@ function FinancialReport() {
       console.error('Error saving revenue to localStorage:', e)
     }
   }, [revenue])
-
-  // Sync Payroll data into expenses
-  useEffect(() => {
-    const syncPayrollExpense = () => {
-      try {
-        const savedPayroll = localStorage.getItem('payrollData_employees')
-        if (savedPayroll) {
-          const employees = JSON.parse(savedPayroll)
-          const totalPayroll = employees.reduce((sum, emp) => sum + (emp.netPay || 0), 0)
-          
-          setExpenses(prevExpenses => {
-            // Check if we already have an auto-generated salary expense
-            const autoSalaryIndex = prevExpenses.findIndex(exp => exp.id === 'auto-payroll-expense')
-            
-            if (totalPayroll > 0) {
-              if (autoSalaryIndex >= 0) {
-                // Update existing
-                const updated = [...prevExpenses]
-                updated[autoSalaryIndex] = {
-                  ...updated[autoSalaryIndex],
-                  amount: totalPayroll,
-                  date: new Date().toISOString().split('T')[0] // updating to today's date or leave it?
-                }
-                return updated
-              } else {
-                // Create new
-                return [
-                  ...prevExpenses,
-                  {
-                    id: 'auto-payroll-expense',
-                    date: new Date().toISOString().split('T')[0],
-                    productName: 'Total Employee Payroll (Auto)',
-                    category: 'Salary',
-                    amount: totalPayroll,
-                    type: 'expense'
-                  }
-                ]
-              }
-            } else if (autoSalaryIndex >= 0) {
-              // Remove if total is 0
-              return prevExpenses.filter(exp => exp.id !== 'auto-payroll-expense')
-            }
-            return prevExpenses
-          })
-        }
-      } catch (e) {
-        console.error('Error syncing payroll expense:', e)
-      }
-    }
-
-    // Initial sync
-    syncPayrollExpense()
-
-    // Listen for custom event from Payroll module
-    window.addEventListener('payrollUpdated', syncPayrollExpense)
-    return () => window.removeEventListener('payrollUpdated', syncPayrollExpense)
-  }, [])
 
   // Calculate totals
   const totalRevenue = revenue.reduce((sum, item) => sum + item.amount, 0)
