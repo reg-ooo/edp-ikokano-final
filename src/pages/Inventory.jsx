@@ -110,10 +110,6 @@ function Inventory() {
     setEditItemId(null)
   }
 
-  const openViewPanel = (item) => {
-    setViewItem(item)
-  }
-
   const closeViewPanel = () => {
     setViewItem(null)
   }
