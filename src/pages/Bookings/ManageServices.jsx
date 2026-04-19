@@ -60,6 +60,8 @@ function ManageServices() {
   const [sortOrder, setSortOrder] = useState('asc')
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [editServiceId, setEditServiceId] = useState(null)
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false)
+  const [deleteService, setDeleteService] = useState(null)
 
   const [formData, setFormData] = useState({
     serviceName: '',
@@ -118,10 +120,9 @@ function ManageServices() {
     closeModal()
   }
 
-  const handleDelete = (id, name) => {
-    if (window.confirm(`Are you sure you want to delete the ${name} service?`)) {
-      setServices(prev => prev.filter(s => s.id !== id))
-    }
+  const handleDelete = (id, serviceName) => {
+    setDeleteService({ id, serviceName })
+    setIsDeleteModalOpen(true)
   }
 
   // SEARCH AND SORT LOGIC
@@ -235,6 +236,26 @@ function ManageServices() {
                 <button type="button" className="cancel-btn" onClick={closeModal}>Cancel</button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {isDeleteModalOpen && deleteService && (
+        <div className="modal-overlay" onClick={() => setIsDeleteModalOpen(false)}>
+          <div className="modal" onClick={(e) => e.stopPropagation()}>
+            <h3>Confirm Deletion</h3>
+            <p>Are you sure you want to delete the "{deleteService.serviceName}" service?</p>
+            <div className="buttons-row">
+              <button className="primary-btn" onClick={() => {
+                setServices(prev => prev.filter(s => s.id !== deleteService.id))
+                setIsDeleteModalOpen(false)
+                setDeleteService(null)
+              }}>Delete</button>
+              <button className="cancel-btn" onClick={() => {
+                setIsDeleteModalOpen(false)
+                setDeleteService(null)
+              }}>Cancel</button>
+            </div>
           </div>
         </div>
       )}

@@ -61,6 +61,8 @@ function ManageBookings() {
   const [services, setServices] = useState([])
   const [selectedCategory, setSelectedCategory] = useState('')
   const [staff, setStaff] = useState([])
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false)
+  const [deleteBooking, setDeleteBooking] = useState(null)
 
   const [formData, setFormData] = useState({
     name: '',
@@ -216,9 +218,8 @@ function ManageBookings() {
   }
 
   const handleDelete = (id, name) => {
-    if (window.confirm(`Are you sure you want to delete the booking for ${name}?`)) {
-      setBookings((prev) => prev.filter((booking) => booking.id !== id))
-    }
+    setDeleteBooking({ id, name })
+    setIsDeleteModalOpen(true)
   }
   
   const getAvailableStaffForService = (serviceCategory) => {
@@ -464,6 +465,26 @@ function ManageBookings() {
                 <button type="button" onClick={closeModal}>Cancel</button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {isDeleteModalOpen && deleteBooking && (
+        <div className="modal-overlay" onClick={() => setIsDeleteModalOpen(false)}>
+          <div className="modal" onClick={(e) => e.stopPropagation()}>
+            <h3>Confirm Deletion</h3>
+            <p>Are you sure you want to delete the booking for "{deleteBooking.name}"?</p>
+            <div className="buttons-row">
+              <button className="primary-btn" onClick={() => {
+                setBookings((prev) => prev.filter((booking) => booking.id !== deleteBooking.id))
+                setIsDeleteModalOpen(false)
+                setDeleteBooking(null)
+              }}>Delete</button>
+              <button className="cancel-btn" onClick={() => {
+                setIsDeleteModalOpen(false)
+                setDeleteBooking(null)
+              }}>Cancel</button>
+            </div>
           </div>
         </div>
       )}
