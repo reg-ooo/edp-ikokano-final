@@ -112,6 +112,23 @@
   text-decoration: underline;
 }
 
+.staff-assignment-select {
+  border: 1px solid #d8d8d8;
+  border-radius: 100px;
+  padding: 0.25rem 0.5rem;
+  font-size: 0.85rem;
+  color: #444;
+  background: #fff;
+  min-width: 150px;
+  max-width: 200px;
+}
+
+.staff-assignment-select:focus {
+  outline: none;
+  border-color: #1d4ed8;
+  box-shadow: 0 0 0 2px rgba(29, 78, 216, 0.1);
+}
+
 .link-btn {
   border: none;
   background: none;
@@ -124,6 +141,14 @@
 
 .link-btn:hover {
   color: #1740a4;
+}
+
+.link-btn.delete {
+  color: #dc2626;
+}
+
+.link-btn.delete:hover {
+  color: #b91c1c;
 }
 
 .primary-btn {

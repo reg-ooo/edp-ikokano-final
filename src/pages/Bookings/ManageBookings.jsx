@@ -4,6 +4,7 @@ import './ManageBookings.css'
 
 const STORAGE_KEY = 'manageBookingsData'
 const SERVICES_STORAGE_KEY = 'manageServicesList'
+const STAFF_STORAGE_KEY = 'staffReportData'
 
 const initialBookings = [
   {
@@ -17,7 +18,8 @@ const initialBookings = [
     contact: '09171234567',
     vehicleModel: 'Toyota Fortuner',
     vehicleBrand: 'Toyota',
-    serviceAvails: 'Cleaning and Engine Check'
+    serviceAvails: 'Cleaning and Engine Check',
+    assignedStaff: null
   },
   {
     id: '2',
@@ -30,7 +32,8 @@ const initialBookings = [
     contact: '09179876543',
     vehicleModel: 'Nissan Urvan',
     vehicleBrand: 'Nissan',
-    serviceAvails: 'Oil and Filter Change'
+    serviceAvails: 'Oil and Filter Change',
+    assignedStaff: null
   }
 ]
 
@@ -57,6 +60,7 @@ function ManageBookings() {
   const [editBookingId, setEditBookingId] = useState(null)
   const [services, setServices] = useState([])
   const [selectedCategory, setSelectedCategory] = useState('')
+  const [staff, setStaff] = useState([])
 
   const [formData, setFormData] = useState({
     name: '',
@@ -77,6 +81,18 @@ function ManageBookings() {
         setServices(JSON.parse(saved))
       } catch (e) {
         console.error('Error loading services:', e)
+      }
+    }
+  }, [])
+
+  // Load staff from StaffReport
+  useEffect(() => {
+    const saved = localStorage.getItem(STAFF_STORAGE_KEY)
+    if (saved) {
+      try {
+        setStaff(JSON.parse(saved))
+      } catch (e) {
+        console.error('Error loading staff:', e)
       }
     }
   }, [])
@@ -204,6 +220,32 @@ function ManageBookings() {
       setBookings((prev) => prev.filter((booking) => booking.id !== id))
     }
   }
+  
+  const getAvailableStaffForService = (serviceCategory) => {
+    if (!serviceCategory) return staff
+    
+    // Map service categories to appropriate staff roles
+    const categoryRoleMap = {
+      'Detailing': ['lead-detailer'],
+      'Maintenance': ['carwasher'],
+      'Cleaning': ['carwasher'],
+      'Repair': ['lead-detailer', 'carwasher'], // Both can handle repairs
+      'Inspection': ['lead-detailer', 'admin']
+    }
+    
+    const allowedRoles = categoryRoleMap[serviceCategory] || []
+    return staff.filter(staffMember => allowedRoles.includes(staffMember.role))
+  }
+
+  const handleStaffAssignment = (bookingId, staffId) => {
+    setBookings((prev) =>
+      prev.map((booking) =>
+        booking.id === bookingId
+          ? { ...booking, assignedStaff: staffId }
+          : booking
+      )
+    )
+  }
 
   const filtered = bookings
     .filter((booking) => {
@@ -285,34 +327,56 @@ function ManageBookings() {
             <th>Service Date</th>
             <th>Completed Date</th>
             <th>Details</th>
+            <th>Assign Staff</th>
             <th>Status</th>
             <th>Actions</th>
           </tr>
         </thead>
         <tbody>
-          {filtered.map((row) => (
-            <tr key={row.id}>
-              <td>
-                <strong>{row.name}</strong><br />
-                <span>{row.details}</span>
-              </td>
-              <td>{row.serviceDate}</td>
-              <td>{row.completedDate || '—'}</td>
-              <td>{row.service}</td>
-              <td>
-                <span className={`manage-bookings-status ${row.status}`}>
-                  {row.status.replace('-', ' ').replace(/\b\w/g, (c) => c.toUpperCase())}
-                </span>
-              </td>
-              <td className="manage-bookings-actions">
-                <button className="link-btn" onClick={() => openEditForm(row)}>Details</button>
-                <button className="link-btn delete" onClick={() => handleDelete(row.id, row.name)}>Delete</button>
-              </td>
-            </tr>
-          ))}
+          {filtered.map((row) => {
+            // Find the service category for this booking
+            const service = services.find(s => s.serviceName === row.serviceAvails)
+            const serviceCategory = service?.serviceCat || ''
+            const availableStaff = getAvailableStaffForService(serviceCategory)
+            
+            return (
+              <tr key={row.id}>
+                <td>
+                  <strong>{row.name}</strong><br />
+                  <span>{row.details}</span>
+                </td>
+                <td>{row.serviceDate}</td>
+                <td>{row.completedDate || '—'}</td>
+                <td>{row.service}</td>
+                <td>
+                  <select
+                    value={row.assignedStaff || ''}
+                    onChange={(e) => handleStaffAssignment(row.id, e.target.value)}
+                    className="staff-assignment-select"
+                  >
+                    <option value="">Unassigned</option>
+                    {availableStaff.map(staffMember => (
+                      <option key={staffMember.id} value={staffMember.id}>
+                        {staffMember.name} ({staffMember.position})
+                      </option>
+                    ))}
+                  </select>
+                </td>
+                <td>
+                  <span className={`manage-bookings-status ${row.status}`}>
+                    {row.status.replace('-', ' ').replace(/\b\w/g, (c) => c.toUpperCase())}
+                  </span>
+                </td>
+                <td className="manage-bookings-actions">
+                  <button className="link-btn" onClick={() => openEditForm(row)}>Details</button>
+                  <button className="link-btn delete" onClick={() => handleDelete(row.id, row.name)}>Delete</button>
+                </td>
+              </tr>
+            )
+          })}
           {filtered.length === 0 && (
             <tr>
-              <td colSpan="6" style={{ textAlign: 'center', padding: '1rem' }}>
+              <td colSpan="7" style={{ textAlign: 'center', padding: '1rem' }}>
                 No bookings found.
               </td>
             </tr>

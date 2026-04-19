@@ -4,6 +4,7 @@ import './BookingReport.css';
 
 const STORAGE_KEY = 'manageBookingsData';
 const SERVICES_STORAGE_KEY = 'manageServicesList';
+const STAFF_STORAGE_KEY = 'staffReportData';
 
 function BookingReport() {
   const [rawBookings, setRawBookings] = useState(() => {
@@ -25,6 +26,18 @@ function BookingReport() {
         return JSON.parse(saved)
       } catch (e) {
         console.error('Error parsing saved services:', e)
+      }
+    }
+    return []
+  })
+
+  const [staff, setStaff] = useState(() => {
+    const saved = localStorage.getItem(STAFF_STORAGE_KEY)
+    if (saved) {
+      try {
+        return JSON.parse(saved)
+      } catch (e) {
+        console.error('Error parsing saved staff:', e)
       }
     }
     return []
@@ -67,6 +80,18 @@ function BookingReport() {
     const service = findService(serviceName)
     const amount = parseServiceAmount(booking.service || serviceName) || Number(service?.servicePrice || 0)
 
+    // Resolve assigned staff
+    let assignedStaffDisplay = 'Unassigned'
+    if (booking.assignedStaff) {
+      const staffMember = staff.find(s => s.id === booking.assignedStaff)
+      if (staffMember) {
+        assignedStaffDisplay = `${staffMember.name} (${staffMember.position})`
+      } else {
+        // Fallback if staff not found
+        assignedStaffDisplay = booking.assignedStaff
+      }
+    }
+
     return {
       id: booking.id,
       refNumber: booking.id,
@@ -80,7 +105,7 @@ function BookingReport() {
         ? `${booking.vehicleBrand} ${booking.vehicleModel}`
         : booking.details || '',
       serviceDetails: serviceName || 'Unknown Service',
-      assignedStaff: booking.assignedStaff || 'Unassigned',
+      assignedStaff: assignedStaffDisplay,
       startTime: booking.startTime || '',
       endTime: booking.endTime || '',
       duration: service?.duration || booking.duration || '--',
@@ -90,7 +115,7 @@ function BookingReport() {
     }
   }
 
-  const bookings = useMemo(() => rawBookings.map(mapBookingEntry), [rawBookings, services])
+  const bookings = useMemo(() => rawBookings.map(mapBookingEntry), [rawBookings, services, staff])
 
   const serviceOptions = ['All Services', ...new Set(services.map((s) => s.serviceName))]
 
@@ -113,6 +138,7 @@ function BookingReport() {
     const handleStorageChange = () => {
       const savedBookings = localStorage.getItem(STORAGE_KEY)
       const savedServices = localStorage.getItem(SERVICES_STORAGE_KEY)
+      const savedStaff = localStorage.getItem(STAFF_STORAGE_KEY)
 
       if (savedBookings) {
         try {
@@ -127,6 +153,14 @@ function BookingReport() {
           setServices(JSON.parse(savedServices))
         } catch (e) {
           console.error('Error parsing services from storage event:', e)
+        }
+      }
+
+      if (savedStaff) {
+        try {
+          setStaff(JSON.parse(savedStaff))
+        } catch (e) {
+          console.error('Error parsing staff from storage event:', e)
         }
       }
     }
@@ -470,12 +504,17 @@ function BookingReport() {
                 </div>
                 <div className="form-group">
                   <label>Assigned Staff</label>
-                  <input 
-                    type="text" 
+                  <select 
                     value={formData.assignedStaff} 
                     onChange={(e) => setFormData({...formData, assignedStaff: e.target.value})}
-                    placeholder="Staff name"
-                  />
+                  >
+                    <option value="">Unassigned</option>
+                    {staff.map(staffMember => (
+                      <option key={staffMember.id} value={staffMember.id}>
+                        {staffMember.name} ({staffMember.position})
+                      </option>
+                    ))}
+                  </select>
                 </div>
               </div>
 
