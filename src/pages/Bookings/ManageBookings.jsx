@@ -295,7 +295,7 @@ function ManageBookings() {
             onChange={(e) => setFilter(e.target.value)}
           >
             <option>All</option>
-            <option>In Progress</option>
+            <option>In-Progress</option>
             <option>Completed</option>
             <option>Pending</option>
           </select>
