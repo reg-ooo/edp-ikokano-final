@@ -63,6 +63,7 @@ function ManageServices() {
   const [editServiceId, setEditServiceId] = useState(null)
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false)
   const [deleteService, setDeleteService] = useState(null)
+  const [viewService, setViewService] = useState(null);
 
   const [formData, setFormData] = useState({
     serviceName: '',
@@ -78,9 +79,10 @@ function ManageServices() {
 
   // Scroll-lock: disable body scroll when panel is open
   useEffect(() => {
-    document.body.style.overflow = isModalOpen || isDeleteModalOpen ? 'hidden' : '';
+    const isOpen = isModalOpen || isDeleteModalOpen || !!viewService;
+    document.body.style.overflow = isOpen ? 'hidden' : '';
     return () => { document.body.style.overflow = ''; };
-  }, [isModalOpen, isDeleteModalOpen]);
+  }, [isModalOpen, isDeleteModalOpen, viewService]);
 
   const openCreateForm = () => {
     setEditServiceId(null)
@@ -98,6 +100,14 @@ function ManageServices() {
     })
     setIsModalOpen(true)
   }
+
+  const openViewPanel = (service) => {
+    setViewService(service);
+  };
+
+  const closeViewPanel = () => {
+    setViewService(null);
+  };
 
   const closeModal = () => {
     setIsModalOpen(false)
@@ -190,6 +200,7 @@ function ManageServices() {
               <td>₱{Number(service.servicePrice).toLocaleString()}</td>
               <td>{service.duration}</td>
               <td className="manage-services-actions">
+                <button className="view-btn" onClick={() => openViewPanel(service)}>View</button>
                 <button className="link-btn" onClick={() => openEditForm(service)}>Edit</button>
                 <button className="link-btn delete" onClick={() => handleDelete(service.id, service.serviceName)}>Delete</button>
               </td>
@@ -197,6 +208,40 @@ function ManageServices() {
           ))}
         </tbody>
       </table>
+
+      {viewService && createPortal(
+        <div className="modal-overlay" onClick={closeViewPanel}>
+          <div className="modal detail-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="detail-modal-header">
+              <h3>Service Details</h3>
+              <button className="detail-close-btn" onClick={closeViewPanel}>✕</button>
+            </div>
+            <div className="detail-name">{viewService.serviceName}</div>
+            <div className="detail-role">{viewService.serviceCat}</div>
+            
+            <div className="detail-grid">
+              <div className="detail-item">
+                <span className="detail-label">Price</span>
+                <span className="detail-value">₱{Number(viewService.servicePrice).toLocaleString()}</span>
+              </div>
+              <div className="detail-item">
+                <span className="detail-label">Duration</span>
+                <span className="detail-value">{viewService.duration}</span>
+              </div>
+            </div>
+
+            <div className="detail-actions">
+              <button className="submit-btn" onClick={() => { closeViewPanel(); openEditForm(viewService); }}>
+                Edit Service
+              </button>
+              <button className="cancel-btn" onClick={closeViewPanel}>
+                Close
+              </button>
+            </div>
+          </div>
+        </div>,
+        document.body
+      )}
 
       {isModalOpen && createPortal(
         <div className="modal-overlay" onClick={closeModal}>

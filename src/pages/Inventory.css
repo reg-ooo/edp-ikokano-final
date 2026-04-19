@@ -206,6 +206,22 @@
   color: #1e40af;
 }
 
+.view-btn {
+  background: none;
+  border: none;
+  color: #10b981;
+  font-weight: 600;
+  font-size: 0.85rem;
+  cursor: pointer;
+  padding: 0;
+  transition: all 0.2s;
+}
+
+.view-btn:hover {
+  text-decoration: underline;
+  color: #059669;
+}
+
 /* Primary Button */
 .primary-btn {
   border: 0;
@@ -413,4 +429,95 @@
   .inventory-table td {
     white-space: nowrap;
   }
+}
+
+/* Details Modal */
+.detail-modal {
+  text-align: center;
+}
+
+.detail-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.detail-modal-header h3 {
+  font-size: 1.25rem;
+  margin: 0;
+}
+
+.detail-close-btn {
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  cursor: pointer;
+  color: #9ca3af;
+}
+
+.detail-name {
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin-bottom: 0.25rem;
+}
+
+.detail-role {
+  font-size: 1rem;
+  color: #6b7280;
+  margin-bottom: 1.5rem;
+}
+
+.detail-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  text-align: left;
+  margin-bottom: 2rem;
+}
+
+.detail-item {
+  background: #f9fafb;
+  padding: 1rem;
+  border-radius: 8px;
+}
+
+.detail-label {
+  display: block;
+  font-size: 0.75rem;
+  color: #6b7280;
+  margin-bottom: 0.25rem;
+  text-transform: uppercase;
+}
+
+.detail-value {
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.detail-actions {
+  display: flex;
+  gap: 1rem;
+}
+
+.detail-actions .submit-btn {
+  flex: 1;
+  background: #1d4ed8;
+  color: white;
+  border: none;
+  padding: 0.75rem;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.detail-actions .cancel-btn {
+  flex: 1;
+  background: #e5e7eb;
+  color: #374151;
+  border: none;
+  padding: 0.75rem;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
 }

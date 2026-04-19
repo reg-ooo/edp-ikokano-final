@@ -84,6 +84,7 @@
   gap: 0.5rem;
 }
 
+.view-btn,
 .edit-btn,
 .delete-btn {
   background: none;
@@ -94,6 +95,14 @@
   padding: 0.25rem 0.5rem;
   border-radius: 6px;
   transition: all 0.2s;
+}
+
+.view-btn {
+  color: #10b981;
+}
+
+.view-btn:hover {
+  background: #ecfdf5;
 }
 
 .edit-btn {
@@ -117,6 +126,131 @@
   padding: 3rem;
   color: #94a3b8;
   font-size: 0.875rem;
+}
+
+/* Modal Overlay */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.55);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+/* Detail Modal */
+.detail-modal {
+  background: white;
+  border-radius: 24px;
+  width: min(550px, 90vw);
+  max-height: 85vh;
+  overflow-y: auto;
+  padding: 1.75rem;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+  text-align: center;
+}
+
+.detail-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.detail-modal-header h3 {
+  font-size: 1.25rem;
+  margin: 0;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.detail-close-btn {
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  cursor: pointer;
+  color: #9ca3af;
+}
+
+.detail-name {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #0f172a;
+  margin-bottom: 0.25rem;
+}
+
+.detail-role {
+  font-size: 1rem;
+  color: #64748b;
+  margin-bottom: 1.5rem;
+  font-weight: 500;
+}
+
+.detail-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  text-align: left;
+  margin-bottom: 2rem;
+}
+
+.detail-item {
+  background: #f8fafc;
+  padding: 1rem;
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
+}
+
+.detail-label {
+  display: block;
+  font-size: 0.75rem;
+  color: #64748b;
+  margin-bottom: 0.25rem;
+  text-transform: uppercase;
+  font-weight: 600;
+}
+
+.detail-value {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #0f172a;
+}
+
+.detail-actions {
+  display: flex;
+  gap: 0.75rem;
+  margin-top: 1rem;
+}
+
+.submit-btn,
+.cancel-btn {
+  flex: 1;
+  padding: 0.625rem 1.25rem;
+  border-radius: 12px;
+  font-weight: 600;
+  font-size: 0.875rem;
+  cursor: pointer;
+  border: none;
+}
+
+.submit-btn {
+  background: #3b82f6;
+  color: white;
+}
+
+.submit-btn:hover {
+  background: #2563eb;
+}
+
+.cancel-btn {
+  background: #f1f5f9;
+  color: #475569;
+}
+
+.cancel-btn:hover {
+  background: #e2e8f0;
 }
 
 /* Responsive */

@@ -277,9 +277,9 @@
 }
 
 .delete-btn {
-  background: #ef4444;
+  background: none;
   border: none;
-  color: white;
+  color: #ef4444;
   font-weight: 600;
   font-size: 0.75rem;
   cursor: pointer;
@@ -289,8 +289,8 @@
 }
 
 .delete-btn:hover {
-  background: #dc2626;
-  color: white;
+  background: #fef2f2;
+  color: #dc2626;
 }
 
 /* Empty State */
@@ -466,19 +466,20 @@
 }
 
 .delete-modal-btn {
-  background: #ef4444;
-  color: white;
-  border: none;
+  background: white;
+  color: #ef4444;
+  border: 1px solid #ef4444;
   padding: 0.625rem 1.25rem;
   border-radius: 12px;
   font-weight: 600;
   font-size: 0.875rem;
   cursor: pointer;
   flex: 1;
+  transition: all 0.2s;
 }
 
 .delete-modal-btn:hover {
-  background: #dc2626;
+  background: #fef2f2;
 }
 
 /* Detail Modal */

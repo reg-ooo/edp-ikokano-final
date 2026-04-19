@@ -45,6 +45,7 @@ function Inventory() {
   const [search, setSearch] = useState('')
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [editItemId, setEditItemId] = useState(null)
+  const [viewItem, setViewItem] = useState(null);
 
   const [formData, setFormData] = useState({
     productName: '',
@@ -74,9 +75,10 @@ function Inventory() {
 
   // Scroll-lock: disable body scroll when panel is open
   useEffect(() => {
-    document.body.style.overflow = isModalOpen ? 'hidden' : '';
+    const isOpen = isModalOpen || !!viewItem;
+    document.body.style.overflow = isOpen ? 'hidden' : '';
     return () => { document.body.style.overflow = ''; };
-  }, [isModalOpen]);
+  }, [isModalOpen, viewItem]);
 
   const openCreateForm = () => {
     setEditItemId(null)
@@ -100,10 +102,18 @@ function Inventory() {
     setIsModalOpen(true)
   }
 
+  const openViewPanel = (item) => {
+    setViewItem(item);
+  };
+
   const closeModal = () => {
     setIsModalOpen(false)
     setEditItemId(null)
   }
+
+  const closeViewPanel = () => {
+    setViewItem(null);
+  };
 
   const handleFormSubmit = (e) => {
     e.preventDefault()
@@ -223,6 +233,7 @@ function Inventory() {
                 </span>
               </td>
               <td className="inventory-actions">
+                <button className="view-btn" onClick={() => openViewPanel(item)}>View</button>
                 <button className="link-btn" onClick={() => openEditForm(item)}>Edit</button>
                 <button className="link-btn delete" onClick={() => handleDelete(item.id, item.productName)}>Delete</button>
               </td>
@@ -237,6 +248,46 @@ function Inventory() {
           )}
         </tbody>
       </table>
+
+      {viewItem && createPortal(
+        <div className="modal-overlay" onClick={closeViewPanel}>
+          <div className="modal detail-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="detail-modal-header">
+              <h3>Item Details</h3>
+              <button className="detail-close-btn" onClick={closeViewPanel}>✕</button>
+            </div>
+            <div className="detail-name">{viewItem.productName}</div>
+            <div className="detail-role">{viewItem.category}</div>
+            
+            <div className="detail-grid">
+              <div className="detail-item">
+                <span className="detail-label">Stock Level</span>
+                <span className="detail-value">{viewItem.stockLevel}</span>
+              </div>
+              <div className="detail-item">
+                <span className="detail-label">Unit Price</span>
+                <span className="detail-value">₱{viewItem.unitPrice.toLocaleString()}</span>
+              </div>
+              <div className="detail-item">
+                <span className="detail-label">Status</span>
+                <span className={`inventory-status ${viewItem.status}`}>
+                  {viewItem.status === 'in-stock' ? 'In Stock' : 'Low Stock'}
+                </span>
+              </div>
+            </div>
+
+            <div className="detail-actions">
+              <button className="submit-btn" onClick={() => { closeViewPanel(); openEditForm(viewItem); }}>
+                Edit Item
+              </button>
+              <button className="cancel-btn" onClick={closeViewPanel}>
+                Close
+              </button>
+            </div>
+          </div>
+        </div>,
+        document.body
+      )}
 
       {isModalOpen && createPortal(
         <div className="modal-overlay" onClick={closeModal}>

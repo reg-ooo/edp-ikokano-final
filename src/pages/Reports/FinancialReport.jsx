@@ -82,6 +82,7 @@ function FinancialReport() {
   const [filterCategory, setFilterCategory] = useState('All')
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [editExpenseId, setEditExpenseId] = useState(null)
+  const [viewExpense, setViewExpense] = useState(null);
 
   const [formData, setFormData] = useState({
     date: '',
@@ -109,9 +110,10 @@ function FinancialReport() {
 
   // Scroll-lock: disable body scroll when panel is open
   useEffect(() => {
-    document.body.style.overflow = isModalOpen ? 'hidden' : '';
+    const isOpen = isModalOpen || !!viewExpense;
+    document.body.style.overflow = isOpen ? 'hidden' : '';
     return () => { document.body.style.overflow = ''; };
-  }, [isModalOpen]);
+  }, [isModalOpen, viewExpense]);
 
   // Calculate totals
   const totalRevenue = revenue.reduce((sum, item) => sum + item.amount, 0)
@@ -139,6 +141,14 @@ function FinancialReport() {
     })
     setIsModalOpen(true)
   }
+
+  const openViewPanel = (expense) => {
+    setViewExpense(expense);
+  };
+
+  const closeViewPanel = () => {
+    setViewExpense(null);
+  };
 
   const closeModal = () => {
     setIsModalOpen(false)
@@ -287,6 +297,7 @@ function FinancialReport() {
                 </td>
                 <td className="amount-cell">₱{expense.amount.toLocaleString()}</td>
                 <td className="expense-actions">
+                  <button className="view-btn" onClick={() => openViewPanel(expense)}>View</button>
                   <button className="link-btn" onClick={() => openEditForm(expense)}>Edit</button>
                   <button className="link-btn delete" onClick={() => handleDelete(expense.id, expense.productName)}>Delete</button>
                 </td>
@@ -302,6 +313,40 @@ function FinancialReport() {
           </tbody>
         </table>
       </div>
+
+      {viewExpense && createPortal(
+        <div className="modal-overlay" onClick={closeViewPanel}>
+          <div className="modal detail-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="detail-modal-header">
+              <h3>Expense Details</h3>
+              <button className="detail-close-btn" onClick={closeViewPanel}>✕</button>
+            </div>
+            <div className="detail-name">{viewExpense.productName}</div>
+            <div className="detail-role">{viewExpense.category}</div>
+            
+            <div className="detail-grid">
+              <div className="detail-item">
+                <span className="detail-label">Date</span>
+                <span className="detail-value">{viewExpense.date}</span>
+              </div>
+              <div className="detail-item">
+                <span className="detail-label">Amount</span>
+                <span className="detail-value">₱{viewExpense.amount.toLocaleString()}</span>
+              </div>
+            </div>
+
+            <div className="detail-actions">
+              <button className="submit-btn" onClick={() => { closeViewPanel(); openEditForm(viewExpense); }}>
+                Edit Expense
+              </button>
+              <button className="cancel-btn" onClick={closeViewPanel}>
+                Close
+              </button>
+            </div>
+          </div>
+        </div>,
+        document.body
+      )}
 
       {/* Add/Edit Modal */}
       {isModalOpen && createPortal(

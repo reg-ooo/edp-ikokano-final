@@ -64,6 +64,7 @@ function ManageBookings() {
   const [staff, setStaff] = useState([])
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false)
   const [deleteBooking, setDeleteBooking] = useState(null)
+  const [viewBooking, setViewBooking] = useState(null);
 
   const [formData, setFormData] = useState({
     name: '',
@@ -111,9 +112,10 @@ function ManageBookings() {
 
   // Scroll-lock: disable body scroll when modal is open
   useEffect(() => {
-    document.body.style.overflow = isModalOpen || isDeleteModalOpen ? 'hidden' : '';
+    const isOpen = isModalOpen || isDeleteModalOpen || !!viewBooking;
+    document.body.style.overflow = isOpen ? 'hidden' : '';
     return () => { document.body.style.overflow = ''; };
-  }, [isModalOpen, isDeleteModalOpen]);
+  }, [isModalOpen, isDeleteModalOpen, viewBooking]);
 
   const openCreateForm = () => {
     setEditBookingId(null)
@@ -152,6 +154,14 @@ function ManageBookings() {
     setIsModalOpen(false)
     setEditBookingId(null)
   }
+
+  const openViewPanel = (booking) => {
+    setViewBooking(booking);
+  };
+
+  const closeViewPanel = () => {
+    setViewBooking(null);
+  };
 
   const getServicePrice = (serviceName) => {
     const service = services.find(s => s.serviceName === serviceName)
@@ -376,7 +386,8 @@ function ManageBookings() {
                   </span>
                 </td>
                 <td className="manage-bookings-actions">
-                  <button className="link-btn" onClick={() => openEditForm(row)}>Details</button>
+                  <button className="view-btn" onClick={() => openViewPanel(row)}>View</button>
+                  <button className="link-btn" onClick={() => openEditForm(row)}>Edit</button>
                   <button className="link-btn delete" onClick={() => handleDelete(row.id, row.name)}>Delete</button>
                 </td>
               </tr>
@@ -391,6 +402,60 @@ function ManageBookings() {
           )}
         </tbody>
       </table>
+
+      {viewBooking && createPortal(
+        <div className="modal-overlay" onClick={closeViewPanel}>
+          <div className="modal detail-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="detail-modal-header">
+              <h3>Booking Details</h3>
+              <button className="detail-close-btn" onClick={closeViewPanel}>✕</button>
+            </div>
+            <div className="detail-name">{viewBooking.name}</div>
+            <div className="detail-role">{viewBooking.contact}</div>
+            
+            <div className="detail-grid">
+              <div className="detail-item">
+                <span className="detail-label">Vehicle</span>
+                <span className="detail-value">{viewBooking.vehicleBrand} {viewBooking.vehicleModel}</span>
+              </div>
+              <div className="detail-item">
+                <span className="detail-label">Service</span>
+                <span className="detail-value">{viewBooking.service}</span>
+              </div>
+              <div className="detail-item">
+                <span className="detail-label">Service Date</span>
+                <span className="detail-value">{viewBooking.serviceDate}</span>
+              </div>
+              <div className="detail-item">
+                <span className="detail-label">Completed Date</span>
+                <span className="detail-value">{viewBooking.completedDate || 'N/A'}</span>
+              </div>
+              <div className="detail-item">
+                <span className="detail-label">Assigned Staff</span>
+                <span className="detail-value">
+                  {viewBooking.assignedStaff ? staff.find(s => s.id === viewBooking.assignedStaff)?.name : 'Unassigned'}
+                </span>
+              </div>
+              <div className="detail-item">
+                <span className="detail-label">Status</span>
+                <span className={`manage-bookings-status ${viewBooking.status}`}>
+                  {viewBooking.status.replace('-', ' ').replace(/\b\w/g, (c) => c.toUpperCase())}
+                </span>
+              </div>
+            </div>
+
+            <div className="detail-actions">
+              <button className="submit-btn" onClick={() => { closeViewPanel(); openEditForm(viewBooking); }}>
+                Edit Booking
+              </button>
+              <button className="cancel-btn" onClick={closeViewPanel}>
+                Close
+              </button>
+            </div>
+          </div>
+        </div>,
+        document.body
+      )}
 
       {isModalOpen && createPortal(
         <div className="modal-overlay" onClick={closeModal}>
