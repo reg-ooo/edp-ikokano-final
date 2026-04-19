@@ -60,6 +60,68 @@
   background: #eff6ff;
 }
 
+.role-actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.save-btn,
+.cancel-btn {
+  background: #3b82f6;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 0.35rem 0.75rem;
+  cursor: pointer;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.cancel-btn {
+  background: #e2e8f0;
+  color: #334155;
+}
+
+.edit-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.edit-label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  font-size: 0.85rem;
+  color: #334155;
+}
+
+.edit-input {
+  width: 100%;
+  padding: 0.65rem 0.75rem;
+  border: 1px solid #cbd5e1;
+  border-radius: 10px;
+  font-size: 0.9rem;
+}
+
+.permissions-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 0.5rem;
+}
+
+.permission-option {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.65rem 0.75rem;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  background: white;
+  color: #334155;
+  font-size: 0.85rem;
+}
+
 .role-permissions {
   font-size: 0.875rem;
   color: #475569;
