@@ -57,24 +57,25 @@ function InventoryReport() {
   const totalProducts = inventory.length;
   const totalUnits = inventory.reduce((sum, item) => sum + (item.stockLevel || 0), 0);
   const lowStockCount = inventory.filter(item => (item.stockLevel || 0) <= 5).length;
+  
 
   const getStockStatus = (quantity) => {
     if (quantity <= 0) return 'out-of-stock';
-    if (quantity <= 3) return 'critical';
-    if (quantity <= 5) return 'low';
+    if (quantity <= 5) return 'critical';
+    if (quantity <= 15) return 'low';
     return 'in-stock';
   };
 
   const getStatusText = (quantity) => {
     if (quantity <= 0) return 'Out of Stock';
-    if (quantity <= 3) return 'Critical';
-    if (quantity <= 5) return 'Low Stock';
+    if (quantity <= 5) return 'Critical';
+    if (quantity <= 15) return 'Low Stock';
     return 'In Stock';
   };
 
   const getBarColor = (quantity) => {
-    if (quantity <= 3) return '#ef4444';
-    if (quantity <= 5) return '#f59e0b';
+    if (quantity <= 5) return '#ef4444';
+    if (quantity <= 15) return '#f59e0b';
     return '#10b981';
   };
 
